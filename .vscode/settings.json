@@ -1,0 +1,9 @@
+{
+    "deno.enable": true,
+    "files.autoSave": "afterDelay",
+    "workbench.iconTheme": "material-icon-theme",
+    "json.schemaDownload.enable": true,
+    "json.schemaDownload.trustedDomains": {
+    "raw.githubusercontent.com": true
+    }
+}

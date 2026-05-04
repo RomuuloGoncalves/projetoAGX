@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "dev": "deno run --watch main.ts"
+  },
+  "imports": {
+    "@db/mongo": "jsr:@db/mongo@^0.34.0",
+    "@std/assert": "jsr:@std/assert@1"
+  }
+}
