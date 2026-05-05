@@ -38,8 +38,9 @@ try {
     });
     console.log(`Conectado ao MongoDB Cluster via Mongoose: ${db_name}`);
   }
-} catch (err: any) {
-  console.error("Erro ao conectar no Mongoose:", err);
+} catch (err: unknown) {
+  const errorMessage = err instanceof Error ? err.message : String(err);
+  throw throwlhos.default.err_internalServerError(`Erro ao conectar no Mongoose: ${errorMessage}`);
 }
 
 export const conn = {
