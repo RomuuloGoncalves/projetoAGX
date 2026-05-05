@@ -1,6 +1,4 @@
-
-
-## Documentação de Problemas Resolvidos (Troubleshooting)
+## Documentação de Problemas Resolvidos
 
 ### Conexão com Mongoose vs Módulo Nativo Deno (`bad auth : authentication failed`)
 
