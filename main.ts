@@ -1,4 +1,4 @@
-import { index } from "./controller/livroController.ts";
+import { index } from "./controllers/livroController.ts";
 
 
 Deno.serve(async (req) => {
