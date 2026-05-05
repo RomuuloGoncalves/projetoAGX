@@ -1,24 +1,39 @@
-import { MongoClient } from "npm:mongodb@6.1.0";
+import { MongoClient } from "mongodb";
 
-const client = new MongoClient(
-  "mongodb+srv://romulogoncalves_db_user:iApzowQfe1T8tuTY@cluster0.1ci50pm.mongodb.net/test?retryWrites=true&w=majority&authSource=admin"
-);
+//imports internos
+import { env } from "./config/env.ts";
 
+const mongo_uri = env.mongo_uri
+if(!mongo_uri){
+  throw new Error("MONGO_URI não definida");
+}
+
+const db_name = env.db_name
+if(!db_name){
+  throw new Error("DB_NAME não definido");
+}
+
+
+const client = new MongoClient(mongo_uri);
 await client.connect();
 
-const db = client.db("sample_mflix");
-const collection = db.collection("movies");
-
-// busca tudo (limitado)
-// const result = await collection.find({}).limit(10).toArray();
+const db = client.db(db_name)
 
 
-// const result = await collection.find({});
+Deno.serve(async (req) => {
+  const url = new URL(req.url);
 
-// for await (const doc of result) {
-//   console.log(doc);
-// }
+  // console.log(url)
 
-const result = await collection.find({}).limit(10).toArray();
+  const collection = db.collection("movies");
+  const result =  await collection.find({}).limit(10).toArray();
+  console.log(result)
+  if (url.pathname === "/") {
+  }
 
-console.log(result)
+  if (url.pathname === "/users") {
+    // return Response.json(result);
+  }
+
+  return new Response("Not Found", { status: 404 });
+});
