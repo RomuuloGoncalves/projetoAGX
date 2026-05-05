@@ -1,16 +1,19 @@
 import { MongoClient } from "mongodb";
+import throwlhos from 'throwlhos'
 
-//imports internos
+//internos
 import { env } from "../config/env.ts";
 
 const mongo_uri = env.mongo_uri
+const db_name = env.db_name
+
+// Preciso validar se as variaveis de acesso estão no corretas
 if(!mongo_uri){
-  throw new Error("MONGO_URI não definida");
+  throw throwlhos.default.err_internalServerError('MONGO_URI não definida')
 }
 
-const db_name = env.db_name
 if(!db_name){
-  throw new Error("DB_NAME não definido");
+  throw throwlhos.default.err_internalServerError('DB_NAME não definido')
 }
 
 const client = new MongoClient(mongo_uri);
