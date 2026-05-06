@@ -4,6 +4,7 @@
   },
   "imports": {
     "@std/dotenv": "jsr:@std/dotenv@^0.225.6",
+    "@zarco/isness": "jsr:@zarco/isness@^0.1.18",
     "express": "npm:express@^5.2.1",
     "mongodb": "npm:mongodb@6.1.0",
     "@db/mongo": "jsr:@db/mongo@^0.34.0",

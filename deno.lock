@@ -10,6 +10,8 @@
     "jsr:@std/dotenv@~0.225.6": "0.225.6",
     "jsr:@std/encoding@^1.0.5": "1.0.10",
     "jsr:@std/internal@^1.0.12": "1.0.13",
+    "jsr:@zarco/isness@*": "0.1.18",
+    "jsr:@zarco/isness@~0.1.18": "0.1.18",
     "npm:express@*": "5.2.1",
     "npm:express@^5.2.1": "5.2.1",
     "npm:mongodb@*": "7.2.0",
@@ -53,6 +55,9 @@
     },
     "@std/internal@1.0.13": {
       "integrity": "2f9546691d4ac2d32859c82dff284aaeac980ddeca38430d07941e7e288725c0"
+    },
+    "@zarco/isness@0.1.18": {
+      "integrity": "a46146d9fabe67d0a273ed3d938788dc9e3bcf6c6f8e8a0dd380d9e431a74343"
     }
   },
   "npm": {
@@ -646,6 +651,7 @@
       "jsr:@db/mongo@0.34",
       "jsr:@std/assert@1",
       "jsr:@std/dotenv@~0.225.6",
+      "jsr:@zarco/isness@~0.1.18",
       "npm:express@^5.2.1",
       "npm:mongodb@6.1.0",
       "npm:mongoose@^8.9.5",

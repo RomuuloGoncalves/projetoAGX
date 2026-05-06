@@ -1,20 +1,26 @@
-import { index } from "./controllers/livroController.ts";
+import { index, find, store } from "./controllers/livroController.ts";
 
 import responser from 'responser'
-import express, { Request, Response } from 'express'
+import express from 'express'
 
 const app = express()
 const router = express.Router()
+app.use(express.json()); // <- ESSENCIAL pra JSON
+app.use(express.urlencoded({ extended: true })); // opcional, mas comum
 
-const responserMiddleware = typeof responser === 'function' ? responser : (responser as any).default;
+// const responserMiddleware = typeof responser === 'function' ? responser : (responser as any).default;
+
+const responserMiddleware = responser.default;
+
 app.use(responserMiddleware) // add responser middleware
 app.use(router)
 
-router.get('/hello', (req: Request, res: Response) => {
-  res.send_badRequest('Request is wrong!')
-})
-
 router.get('/', index)
+
+router.post('/store', store)
+
+router.get('/find', find)
+
 
 app.listen(8000, () => {
   console.log("Servidor rodando na porta 8000");

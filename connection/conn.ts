@@ -18,6 +18,10 @@ if(!db_name){
   throw throwlhos.default.err_internalServerError('DB_NAME não definido')
 }
 
+if(!mongo_uri_mongoose){
+  throw throwlhos.default.err_internalServerError('MONGO_URI_MONGOOSE não definido')
+}
+
 // Conexão drive nativo
 // try {
 //   client = new MongoClient(mongo_uri);
@@ -30,14 +34,12 @@ if(!db_name){
 
 // Conexão via mongoose
 try {
-  if (mongo_uri_mongoose) {
-    await mongoose.connect(mongo_uri_mongoose, {
-      dbName: db_name, 
-      authSource: "admin", //Força o Mongoose a autenticar no banco 'admin'
-      serverSelectionTimeoutMS: 5000,
-    });
-    console.log(`Conectado ao MongoDB Cluster via Mongoose: ${db_name}`);
-  }
+  await mongoose.connect(mongo_uri_mongoose, {
+    dbName: db_name, 
+    authSource: "admin",
+    serverSelectionTimeoutMS: 5000,
+  });
+  console.log(`Conectado ao MongoDB Cluster via Mongoose: ${db_name}`);
 } catch (err: unknown) {
   const errorMessage = err instanceof Error ? err.message : String(err);
   throw throwlhos.default.err_internalServerError(`Erro ao conectar no Mongoose: ${errorMessage}`);
