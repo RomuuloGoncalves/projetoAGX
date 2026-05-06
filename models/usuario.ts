@@ -5,7 +5,7 @@ const usuarioSchema = new conn.mongoose.Schema({
    "email": String,
    "senha": String,
    "cpf": Number,
-   "dataNasc": Date,
+   "data_nascimento": Date,
 });
 
 const Usuario = conn.mongoose.model("Usuario", usuarioSchema);

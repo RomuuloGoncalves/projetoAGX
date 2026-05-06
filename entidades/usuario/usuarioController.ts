@@ -29,7 +29,7 @@ async function find(req: Request, res: Response) {
 async function store(req: Request, res: Response) {
     try{
         const erros = validarUsuario(req.body)
-        
+
         if (erros && Object.keys(erros).length > 0) {
             return res.send_badRequest("Dados inválidos", erros )
         }

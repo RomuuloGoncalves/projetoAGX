@@ -36,19 +36,19 @@ rc.addRules('cpf', [
   },
 ])
 
-rc.addRules('dataNasc', [
+rc.addRules('data_nascimento', [
   { 
-    validator: (dataNasc: string) => isness.date(dataNasc), 
+    validator: (data_nascimento: string) => isness.date(data_nascimento), 
     message: 'Data de Nascimento inválida' 
   },
 ])
 
-export const validarUsuario = (data: any) => {
+export const validarUsuario = (data: Record<string, unknown>) => {
   return rc.check(
     { nome: data.nome },
     { email: data.email }, 
     { senha: data.senha }, 
     { cpf: data.cpf },
-    { dataNasc: data.dataNasc },
+    { data_nascimento: data.data_nascimento },
   )
 } 

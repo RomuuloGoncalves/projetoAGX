@@ -1,8 +1,6 @@
 import Livro from "../../models/livro.ts";
 import { Request, Response } from 'express';
-// import is from "@zarco/isness"
-// import throwlhos from 'throwlhos'
-
+import { validarLivro } from "./livroRules.ts";
 
 async function index(_req: Request, res: Response) {
     try {
@@ -30,6 +28,12 @@ async function find(req: Request, res: Response) {
 
 async function store(req: Request, res: Response) {
     try{
+        const erros = validarLivro(req.body)
+        
+        if (erros && Object.keys(erros).length > 0) {
+            return res.status(400).json({ message: "Dados inválidos", erros })
+        }
+
         const livro = await Livro.create(req.body)
         return res.send_created("Livro criado com sucesso", livro)
     } catch (error: unknown) {
