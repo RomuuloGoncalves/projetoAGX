@@ -41,4 +41,18 @@ async function store(req: Request, res: Response) {
     }
 }
 
-export {index, find, store}
+async function exclude(req: Request, res: Response) {
+    const id = (req.body) ? req.body : null
+
+    try {
+        if(id){
+            const result = await Livro.deleteOne(id)
+            return res.send_ok('Livro exlcuído', result);
+        }
+    } catch (error: unknown) {
+        console.error(error)
+        return res.send_internalServerError('Erro ao excluír livros', error);
+    }
+}
+
+export {index, find, store, exclude}

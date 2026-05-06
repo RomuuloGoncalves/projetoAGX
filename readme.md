@@ -44,8 +44,8 @@ Campos (exemplo):
 {
    "_id": "ObjectId",
    "nome": "string",
-   "pais": "string",
-   "ano_nascimento": "number"
+   "nacionalidade": "string",
+   // "ano_nascimento": "number"
 }
 ```
 
