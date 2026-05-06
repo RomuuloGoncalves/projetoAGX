@@ -2,12 +2,11 @@ import Livro from "../../models/livro.ts";
 import { Request, Response } from 'express';
 // import is from "@zarco/isness"
 // import throwlhos from 'throwlhos'
-import * as isness from "@zarco/isness";
 
 
 async function index(_req: Request, res: Response) {
     try {
-        const result = await Livro.find().limit(5)
+        const result = await Livro.find()
         return res.send_ok('Livros listados com sucesso', result);
     } catch (error: unknown) {
         console.error(error)
@@ -31,9 +30,6 @@ async function find(req: Request, res: Response) {
 
 async function store(req: Request, res: Response) {
     try{
-        if(!isness.alphanumeric(req.body.titulo))
-            return res.send_badRequest("O nome precisa ser um texto alfanumérico")
-
         const livro = await Livro.create(req.body)
         return res.send_created("Livro criado com sucesso", livro)
     } catch (error: unknown) {
