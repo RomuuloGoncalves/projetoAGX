@@ -1,4 +1,3 @@
-// models/Movie.ts
 import { conn } from "../connection/conn.ts";
 
 const livroSchema = new conn.mongoose.Schema({

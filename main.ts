@@ -1,25 +1,32 @@
-import { index, find, store } from "./controllers/livroController.ts";
+import * as livroController from "./controllers/livroController.ts";
+import * as usuarioController from "./controllers/usuarioController.ts";
 
 import responser from 'responser'
 import express from 'express'
+import morgan from 'morgan'
 
 const app = express()
 const router = express.Router()
-app.use(express.json()); // <- ESSENCIAL pra JSON
-app.use(express.urlencoded({ extended: true })); // opcional, mas comum
+
+// Para que o req.body consiga recuperar as informações
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Logs através do morgan
+app.use(morgan('combined'))
 
 // const responserMiddleware = typeof responser === 'function' ? responser : (responser as any).default;
-
 const responserMiddleware = responser.default;
 
-app.use(responserMiddleware) // add responser middleware
+app.use(responserMiddleware)
 app.use(router)
 
-router.get('/', index)
+router.get('/livro/', livroController.index)
+router.post('/livro/store', livroController.store)
+router.get('/livro/find', livroController.find)
 
-router.post('/store', store)
-
-router.get('/find', find)
+router.get('/usuario/', usuarioController.index)
+router.post('/usuario/store', usuarioController.store)
 
 
 app.listen(8000, () => {
