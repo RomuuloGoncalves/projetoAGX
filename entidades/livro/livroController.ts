@@ -1,4 +1,4 @@
-import Livro from "../models/livro.ts";
+import Livro from "../../models/livro.ts";
 import { Request, Response } from 'express';
 // import is from "@zarco/isness"
 // import throwlhos from 'throwlhos'

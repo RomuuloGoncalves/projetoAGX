@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
-import Livro from "../models/livro.ts";
-import Usuario from "../models/usuario.ts";
+import Livro from "../../models/livro.ts";
+import Usuario from "../../models/usuario.ts";
 // import * as isness from "@zarco/isness";
 
 
