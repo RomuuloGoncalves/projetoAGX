@@ -1,5 +1,5 @@
-import * as livroController from "./controllers/livroController.ts";
-import * as usuarioController from "./controllers/usuarioController.ts";
+import * as livroController from "./livro/livroController.ts";
+import * as usuarioController from "./usuario/usuarioController.ts";
 
 import responser from 'responser'
 import express from 'express'
