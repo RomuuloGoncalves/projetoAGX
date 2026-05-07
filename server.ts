@@ -24,22 +24,23 @@ app.use(responserMiddleware)
 app.use(router)
 
 router.get('/livro/', livroController.index)
-router.post('/livro/store', livroController.store)
 router.get('/livro/find', livroController.find)
+router.post('/livro/store', livroController.store)
 router.delete('/livro/exclude', livroController.exclude)
 
 router.get('/usuario/', usuarioController.index)
+router.get('/usuario/find', usuarioController.find)
 router.post('/usuario/store', usuarioController.store)
-router.post('/usuario/find', usuarioController.find)
+router.delete('/usuario/exclude', usuarioController.exclude)
 
 router.get('/autor/', autorController.index)
+router.get('/autor/find', autorController.find)
 router.post('/autor/store', autorController.store)
-router.post('/autor/find', autorController.find)
 router.delete('/autor/exclude', autorController.exclude)
 
 router.get('/emprestimo/', emprestimoController.index)
+router.get('/emprestimo/find', emprestimoController.find)
 router.post('/emprestimo/store', emprestimoController.store)
-router.post('/emprestimo/find', emprestimoController.find)
 router.delete('/emprestimo/exclude', emprestimoController.exclude)
 
 export default app;

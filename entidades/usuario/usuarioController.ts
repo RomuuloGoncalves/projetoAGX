@@ -42,4 +42,18 @@ async function store(req: Request, res: Response) {
     }
 }
 
-export {index, find, store}
+async function exclude(req: Request, res: Response) {
+    const id = (req.body) ? req.body : null
+
+    try {
+        if(id){
+            const result = await Usuario.deleteOne(id)
+            return res.send_ok('Usuário excluído', result);
+        }
+    } catch (error: unknown) {
+        console.error(error)
+        return res.send_internalServerError('Erro ao excluir usuário', error);
+    }
+}
+
+export {index, find, store, exclude}
