@@ -9,6 +9,7 @@ const livroSchema = new conn.mongoose.Schema({
   titulo: String,
   isbn: Number,
   ano: Number,
+  autor_id: { type: conn.mongoose.Schema.Types.ObjectId, ref: 'Autor' },
   quantidade_total: Number,
   quantidade_disponivel: Number,
 });

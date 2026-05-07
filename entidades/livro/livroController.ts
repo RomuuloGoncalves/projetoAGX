@@ -25,6 +25,11 @@ regras.addRules("ano", [{
   message: "Ano inválido",
 }]);
 
+regras.addRules("autor_id", [{
+  validator: (autor: string) => isness.string(autor) && autor.trim().length > 0,
+  message: "O ID do autor precisa ser um texto válido",
+}]);
+
 regras.addRules("quantidade_total", [{
   validator: (qtd: unknown) => isness.number(qtd) && Number(qtd) >= 0,
   message: "A quantidade total deve ser um número válido",
@@ -89,6 +94,7 @@ async function criar(req: Request, res: Response) {
       { titulo: corpo.titulo },
       { isbn: corpo.isbn },
       { ano: corpo.ano },
+      { autor_id: corpo.autor_id },
       { quantidade_total: corpo.quantidade_total },
       { quantidade_disponivel: corpo.quantidade_disponivel },
     );
@@ -102,6 +108,7 @@ async function criar(req: Request, res: Response) {
       titulo: String(corpo.titulo),
       isbn: Number(corpo.isbn),
       ano: Number(corpo.ano),
+      autorId: String(corpo.autor_id),
       quantidadeTotal: Number(corpo.quantidade_total),
       quantidadeDisponivel: Number(corpo.quantidade_disponivel),
     });

@@ -12,6 +12,7 @@ export default class LivroRepository extends RepositoryBase<LivroModelo> {
   protected converterParaModelo(documento: Record<string, unknown>): LivroModelo {
     return new LivroModelo({
       id: String(documento._id ?? ""),
+      autorId: documento.autor_id ? String(documento.autor_id) : undefined,
       titulo: String(documento.titulo ?? ""),
       isbn: Number(documento.isbn ?? 0),
       ano: Number(documento.ano ?? 0),

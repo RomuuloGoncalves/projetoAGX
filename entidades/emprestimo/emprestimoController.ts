@@ -1,11 +1,12 @@
 import requestCheck from "request-check";
 import * as isness from "@zarco/isness";
 import { Request, Response } from "express";
-import { EmprestimoMongoDB } from "../../connection/mongooseModels.ts";
+import { EmprestimoMongoDB, LivroMongoDB } from "../../connection/mongooseModels.ts";
 import EmprestimoModelo from "../../models/emprestimo.ts";
 import { tratarErroHttp } from "../httpErrorHandler.ts";
 import EmprestimoRepository from "./emprestimoRepository.ts";
 import EmprestimoService from "./emprestimoService.ts";
+import LivroRepository from "../livro/livroRepository.ts";
 
 // Criar regras de validação
 const regras = requestCheck.default();
@@ -34,8 +35,11 @@ regras.addRules("data_emprestimo", [{
 export const repositorioEmprestimo = new EmprestimoRepository(
   EmprestimoMongoDB,
 );
+export const repositorioLivroAux = new LivroRepository(LivroMongoDB);
+
 export const servicoEmprestimo = new EmprestimoService(
   repositorioEmprestimo,
+  repositorioLivroAux
 );
 
 // Função auxiliar para extrair o ID do empréstimo da requisição

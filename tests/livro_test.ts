@@ -16,6 +16,7 @@ Deno.test({
       titulo: "O Hobbit",
       isbn: 9780261102217,
       ano: 1937,
+      autor_id: "507f1f77bcf86cd799439011",
       quantidade_total: 3,
       quantidade_disponivel: 3,
     };
@@ -26,8 +27,8 @@ Deno.test({
     assertEquals(response.status, 201);
 
     // O middleware responser deve retornar o livro no nó 'data'
-    assertExists(response.body.data._id);
-    livroIdCriado = response.body.data._id; // Salvamos para testar no FIND
+    assertExists(response.body.data.id);
+    livroIdCriado = response.body.data.id; // Salvamos para testar no FIND
   },
 });
 

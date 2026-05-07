@@ -37,25 +37,25 @@ export default abstract class RepositoryBase<T extends ModeloBase> {
   }
 
   // Criar um novo registro
-  async criar(modelo: T): Promise<T | null> {
-    const documento = await this.bd.create(modelo.obterDados());
-    if (!documento) {
+  async criar(modelo: T, options?: mongoose.SaveOptions): Promise<T | null> {
+    const documentos = await this.bd.create([modelo.obterDados()], options);
+    if (!documentos || documentos.length === 0) {
       return null;
     }
 
     return this.converterParaModelo(
-      documento.toObject() as Record<string, unknown>,
+      documentos[0].toObject() as Record<string, unknown>,
     );
   }
 
   // Atualizar um registro por ID
-  async atualizarPorId(id: string, dados: Partial<Record<string, unknown>>): Promise<T | null> {
+  async atualizarPorId(id: string, dados: Partial<Record<string, unknown>>, options?: mongoose.QueryOptions): Promise<T | null> {
     // Valida se o ID é válido
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return null;
     }
 
-    const documento = await this.bd.findByIdAndUpdate(id, dados, { new: true }).lean();
+    const documento = await this.bd.findByIdAndUpdate(id, dados, { new: true, ...options }).lean();
     if (!documento) {
       return null;
     }
