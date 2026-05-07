@@ -5,6 +5,15 @@
 API CRUD para gerenciamento de uma biblioteca, desenvolvida com **Deno** e **MongoDB**.
 Permite gerenciar **usuários, autores, livros e empréstimos**, com **autenticação JWT**, **transações MongoDB**, **logs padronizados** e **testes automatizados**.
 
+## Estrutura em Camadas
+
+O projeto segue o fluxo **Controller → Service → Repository → MongoDB**:
+
+- **Controller**: valida payload e define regras de entrada.
+- **Service**: aplica regra de negócio e orquestra repositórios.
+- **Repository**: centraliza queries e converte para Model.
+- **Model**: classes TypeScript que estendem `CoreModel`.
+
 ## Tecnologias Utilizadas
 
 - Deno
@@ -92,29 +101,31 @@ Campos (exemplo):
 
 ### Usuários
 
-- `POST /usuarios` — criar usuário
-- `POST /login` — autenticar e gerar JWT
+- `POST /usuario` — criar usuário
+- `GET /usuario` — listar usuários
+- `GET /usuario/:usuarioId` — buscar usuário por id
+- `DELETE /usuario/:usuarioId` — remover usuário
 
 ### Autores
 
-- `POST /autores` — criar autor
-- `GET /autores` — listar autores
-- `PUT /autores/:id` — atualizar autor
-- `DELETE /autores/:id` — remover autor
+- `POST /autor` — criar autor
+- `GET /autor` — listar autores
+- `GET /autor/:autorId` — buscar autor por id
+- `DELETE /autor/:autorId` — remover autor
 
 ### Livros
 
-- `POST /livros` — criar livro
-- `GET /livros` — listar livros
-- `PUT /livros/:id` — atualizar livro
-- `DELETE /livros/:id` — remover livro
+- `POST /livro` — criar livro
+- `GET /livro` — listar livros
+- `GET /livro/:livroId` — buscar livro por id
+- `DELETE /livro/:livroId` — remover livro
 
 ### Empréstimos
 
-- `POST /emprestimos` — criar empréstimo (transação)
-- `GET /emprestimos` — listar empréstimos
-- `PUT /emprestimos/:id/devolver` — marcar devolução
-- `GET /usuarios/:id/emprestimos` — empréstimos de um usuário específico
+- `POST /emprestimo` — criar empréstimo
+- `GET /emprestimo` — listar empréstimos
+- `GET /emprestimo/:emprestimoId` — buscar empréstimo por id
+- `DELETE /emprestimo/:emprestimoId` — remover empréstimo
 
 ## Autenticação
 

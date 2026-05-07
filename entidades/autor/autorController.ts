@@ -1,58 +1,122 @@
-import Autor from "../../models/autor.ts";
-import { Request, Response } from 'express';
-import { validarAutor } from "./autorRules.ts";
+import requestCheck from "request-check";
+import * as isness from "@zarco/isness";
+import { Request, Response } from "express";
+import { AutorMongoDB } from "../../connection/mongooseModels.ts";
+import AutorModelo from "../../models/autor.ts";
+import { tratarErroHttp } from "../httpErrorHandler.ts";
+import RepositorioAutor from "./autorRepository.ts";
+import ServicoAutor from "./autorService.ts";
 
-async function index(_req: Request, res: Response) {
-    try {
-        const result = await Autor.find()
-        return res.send_ok('Autores listados com sucesso', result);
-    } catch (error: unknown) {
-        console.error(error)
-        return res.send_internalServerError('Erro ao buscar autores', error);
-    }
+// Criar instâncias do repositório e serviço
+const regras = requestCheck.default();
+
+// Regra de validação: o nome deve ser um texto não vazio
+regras.addRules("nome", [{
+  validator: (nome: string) => isness.string(nome) && nome.trim().length > 0,
+  message: "O nome precisa ser um texto válido",
+}]);
+
+// Regra de validação: a nacionalidade deve ser um texto não vazio
+regras.addRules("nacionalidade", [{
+  validator: (nacionalidade: string) =>
+    isness.string(nacionalidade) && nacionalidade.trim().length > 0,
+  message: "A nacionalidade precisa ser um texto válido",
+}]);
+
+// Criar instâncias (exportadas para uso em server.ts)
+export const repositorioAutor = new RepositorioAutor(AutorMongoDB);
+export const servicoAutor = new ServicoAutor(repositorioAutor);
+
+// Função auxiliar para extrair o ID do autor da requisição
+function obterIdAutor(request: Request): string | null {
+  // Tenta pegar do URL (/autor/:autorId)
+  const autorIdDoParams = request.params.autorId;
+  if (autorIdDoParams) return autorIdDoParams;
+
+  // Tenta pegar do corpo da requisição
+  const corpo = request.body as { _id?: unknown; id?: unknown };
+  if (corpo?._id && typeof corpo._id === "string") return corpo._id;
+  if (corpo?.id && typeof corpo.id === "string") return corpo.id;
+  return null;
 }
 
-async function find(req: Request, res: Response) {
-    const id = (req.body) ? req.body : null
-
-    try {
-        if(id){
-            const result = await Autor.findOne(id)
-            return res.send_ok('Autor encontrado', result);
-        }
-    } catch (error: unknown) {
-        console.error(error)
-        return res.send_internalServerError('Erro ao buscar autor', error);
-    }
+// GET /autor - Listar todos os autores
+async function listar(_request: Request, response: Response) {
+  try {
+    // Chamar serviço para listar
+    const autores = await servicoAutor.listar();
+    // Responder com sucesso
+    return response.send_ok("Autores listados com sucesso", autores);
+  } catch (erro: unknown) {
+    return tratarErroHttp(response, erro);
+  }
 }
 
-async function store(req: Request, res: Response) {
-    try{
-        const erros = validarAutor(req.body)
-        
-        if (erros && Object.keys(erros).length > 0) {
-            return res.status(400).json({ message: "Dados inválidos", erros })
-        }
-
-        const autor = await Autor.create(req.body)
-        return res.send_created("Autor criado com sucesso", autor)
-    } catch (error: unknown) {
-        return res.send_internalServerError("Erro ao inserir novo autor", error)
+// GET /autor/:autorId - Buscar um autor por ID
+async function buscar(request: Request, response: Response) {
+  try {
+    // Extrair ID do URL
+    const autorId = obterIdAutor(request);
+    if (!autorId) {
+      return response.send_badRequest("ID do autor não informado.");
     }
+
+    // Chamar serviço para buscar
+    const autor = await servicoAutor.obterPorId(autorId);
+    // Responder com sucesso
+    return response.send_ok("Autor encontrado", autor);
+  } catch (erro: unknown) {
+    return tratarErroHttp(response, erro);
+  }
 }
 
-async function exclude(req: Request, res: Response) {
-    const id = (req.body) ? req.body : null
+// POST /autor - Criar um novo autor
+async function criar(request: Request, response: Response) {
+  try {
+    const corpo = request.body as Record<string, unknown>;
+    
+    // Validar dados enviados
+    const erros = regras.check(
+      { nome: corpo.nome },
+      { nacionalidade: corpo.nacionalidade },
+    );
 
-    try {
-        if(id){
-            const result = await Autor.deleteOne(id)
-            return res.send_ok('Autor excluído', result);
-        }
-    } catch (error: unknown) {
-        console.error(error)
-        return res.send_internalServerError('Erro ao excluir autor', error);
+    if (erros) {
+      return response.send_badRequest("Dados inválidos", erros);
     }
+
+    // Criar objeto AutorModelo
+    const autor = new AutorModelo({
+      nome: String(corpo.nome),
+      nacionalidade: String(corpo.nacionalidade),
+    });
+
+    // Chamar serviço para criar
+    const autorCriado = await servicoAutor.criar(autor);
+    // Responder com sucesso
+    return response.send_created("Autor criado com sucesso", autorCriado);
+  } catch (erro: unknown) {
+    return tratarErroHttp(response, erro);
+  }
 }
 
-export {index, find, store, exclude}
+// DELETE /autor/:autorId - Deletar um autor
+async function deletar(request: Request, response: Response) {
+  try {
+    // Extrair ID do URL
+    const autorId = obterIdAutor(request);
+    if (!autorId) {
+      return response.send_badRequest("ID do autor não informado.");
+    }
+
+    // Chamar serviço para deletar
+    const autorDeletado = await servicoAutor.deletar(autorId);
+    // Responder com sucesso
+    return response.send_ok("Autor excluído", { id: autorDeletado.obterID() });
+  } catch (erro: unknown) {
+    return tratarErroHttp(response, erro);
+  }
+}
+
+// Exportar funções para o servidor
+export { listar, buscar, criar, deletar };

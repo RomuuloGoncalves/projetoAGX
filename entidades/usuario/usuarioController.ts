@@ -1,59 +1,150 @@
-import { Request, Response } from 'express';
-import Usuario from "../../models/usuario.ts";
-import { validarUsuario } from "./usuarioRules.ts";
+import requestCheck from "request-check";
+import * as isness from "@zarco/isness";
+import { Request, Response } from "express";
+import { UsuarioMongoDB } from "../../connection/mongooseModels.ts";
+import UsuarioModelo from "../../models/usuario.ts";
+import { tratarErroHttp } from "../httpErrorHandler.ts";
+import RepositorioUsuario from "./usuarioRepository.ts";
+import ServicoUsuario from "./usuarioService.ts";
 
-async function index(_req: Request, res: Response) {
-    try {
-        const result = await Usuario.find()
-        return res.send_ok('Usuários listados com sucesso', result);
-    } catch (error: unknown) {
-        console.error(error)
-        return res.send_internalServerError('Erro ao buscar usuários', error);
-    }
+// Criar regras de validação
+const regras = requestCheck.default();
+
+// Regra: o nome deve ser um texto não vazio
+regras.addRules("nome", [{
+  validator: (nome: string) => isness.string(nome) && nome.trim().length > 0,
+  message: "O nome precisa ser um texto válido",
+}]);
+
+// Regra: o email deve ser válido
+regras.addRules("email", [{
+  validator: (email: string) => isness.email(email),
+  message: "E-mail inválido",
+}]);
+
+// Regra: a senha deve ser alfanumérica e ter mínimo 8 caracteres
+regras.addRules("senha", [{
+  validator: (
+    senha: string,
+  ) => (isness.alphanumeric(senha) || isness.number(senha)),
+  message: "A senha precisa ser alfanumérica",
+}, {
+  validator: (senha: string) => senha.length >= 8,
+  message: "A senha precisa ter pelo menos 8 caracteres",
+}]);
+
+// Regra: o CPF deve ser válido
+regras.addRules("cpf", [{
+  validator: (cpf: string) => isness.cpf(cpf),
+  message: "CPF inválido",
+}]);
+
+// Regra: a data de nascimento deve ser válida
+regras.addRules("data_nascimento", [{
+  validator: (dataNascimento: string) => isness.date(dataNascimento),
+  message: "Data de Nascimento inválida",
+}]);
+
+// Criar instâncias (exportadas para uso em server.ts)
+export const repositorioUsuario = new RepositorioUsuario(UsuarioMongoDB);
+export const servicoUsuario = new ServicoUsuario(repositorioUsuario);
+
+// Função auxiliar para extrair o ID do usuário da requisição
+function obterIdUsuario(request: Request): string | null {
+  // Tenta pegar do URL (/usuario/:usuarioId)
+  const usuarioIdDoParams = request.params.usuarioId;
+  if (usuarioIdDoParams) return usuarioIdDoParams;
+
+  // Tenta pegar do corpo da requisição
+  const corpo = request.body as { _id?: unknown; id?: unknown };
+  if (corpo?._id && typeof corpo._id === "string") return corpo._id;
+  if (corpo?.id && typeof corpo.id === "string") return corpo.id;
+  return null;
 }
 
-async function find(req: Request, res: Response) {
-    const id = (req.body) ? req.body : null
-
-    try {
-        if(id){
-            const result = await Usuario.findOne(id)
-            return res.send_ok('Usuário encontrado', result);
-        }
-    } catch (error: unknown) {
-        console.error(error)
-        return res.send_internalServerError('Erro ao buscar usuário', error);
-    }
+// GET /usuario - Listar todos os usuários
+async function listar(_request: Request, response: Response) {
+  try {
+    // Chamar serviço para listar
+    const usuarios = await servicoUsuario.listar();
+    // Responder com sucesso
+    return response.send_ok("Usuários listados com sucesso", usuarios);
+  } catch (erro: unknown) {
+    return tratarErroHttp(response, erro);
+  }
 }
 
-async function store(req: Request, res: Response) {
-    try{
-        const erros = validarUsuario(req.body)
-
-        if (erros && Object.keys(erros).length > 0) {
-            return res.send_badRequest("Dados inválidos", erros )
-        }
-
-        console.log(req.body)
-        const usuario = await Usuario.create(req.body)
-        return res.send_created("Usuário criado com sucesso", usuario)
-    } catch (error: unknown) {
-        return res.send_internalServerError("Erro ao inserir novo usuário", error)
+// GET /usuario/:usuarioId - Buscar um usuário por ID
+async function buscar(request: Request, response: Response) {
+  try {
+    // Extrair ID do URL
+    const usuarioId = obterIdUsuario(request);
+    if (!usuarioId) {
+      return response.send_badRequest("ID do usuário não informado.");
     }
+
+    // Chamar serviço para buscar
+    const usuario = await servicoUsuario.obterPorId(usuarioId);
+    // Responder com sucesso
+    return response.send_ok("Usuário encontrado", usuario);
+  } catch (erro: unknown) {
+    return tratarErroHttp(response, erro);
+  }
 }
 
-async function exclude(req: Request, res: Response) {
-    const id = (req.body) ? req.body : null
+// POST /usuario - Criar um novo usuário
+async function criar(request: Request, response: Response) {
+  try {
+    const corpo = request.body as Record<string, unknown>;
+    
+    // Validar dados enviados
+    const erros = regras.check(
+      { nome: corpo.nome },
+      { email: corpo.email },
+      { senha: corpo.senha },
+      { cpf: corpo.cpf },
+      { data_nascimento: corpo.data_nascimento },
+    );
 
-    try {
-        if(id){
-            const result = await Usuario.deleteOne(id)
-            return res.send_ok('Usuário excluído', result);
-        }
-    } catch (error: unknown) {
-        console.error(error)
-        return res.send_internalServerError('Erro ao excluir usuário', error);
+    if (erros) {
+      return response.send_badRequest("Dados inválidos", erros);
     }
+
+    // Criar objeto UsuarioModelo
+    const usuario = new UsuarioModelo({
+      nome: String(corpo.nome),
+      email: String(corpo.email),
+      senha: String(corpo.senha),
+      cpf: String(corpo.cpf),
+      dataNascimento: new Date(String(corpo.data_nascimento)),
+    });
+
+    // Chamar serviço para criar
+    const usuarioCriado = await servicoUsuario.criar(usuario);
+    // Responder com sucesso
+    return response.send_created("Usuário criado com sucesso", usuarioCriado);
+  } catch (erro: unknown) {
+    return tratarErroHttp(response, erro);
+  }
 }
 
-export {index, find, store, exclude}
+// DELETE /usuario/:usuarioId - Deletar um usuário
+async function deletar(request: Request, response: Response) {
+  try {
+    // Extrair ID do URL
+    const usuarioId = obterIdUsuario(request);
+    if (!usuarioId) {
+      return response.send_badRequest("ID do usuário não informado.");
+    }
+
+    // Chamar serviço para deletar
+    const usuarioDeletado = await servicoUsuario.deletar(usuarioId);
+    // Responder com sucesso
+    return response.send_ok("Usuário excluído", { id: usuarioDeletado.obterID() });
+  } catch (erro: unknown) {
+    return tratarErroHttp(response, erro);
+  }
+}
+
+// Exportar funções para o servidor
+export { listar, buscar, criar, deletar };
