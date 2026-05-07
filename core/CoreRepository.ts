@@ -48,6 +48,21 @@ export default abstract class RepositoryBase<T extends ModeloBase> {
     );
   }
 
+  // Atualizar um registro por ID
+  async atualizarPorId(id: string, dados: Partial<Record<string, unknown>>): Promise<T | null> {
+    // Valida se o ID é válido
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return null;
+    }
+
+    const documento = await this.bd.findByIdAndUpdate(id, dados, { new: true }).lean();
+    if (!documento) {
+      return null;
+    }
+
+    return this.converterParaModelo(documento as Record<string, unknown>);
+  }
+
   // Deletar um registro por ID
   async deletarPorId(id: string): Promise<T | null> {
     // Valida se o ID é válido

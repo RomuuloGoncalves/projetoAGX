@@ -27,24 +27,28 @@ app.use(router);
 router.get("/livro", livroController.listar);
 router.get("/livro/:livroId", livroController.buscar);
 router.post("/livro", livroController.criar);
+router.put("/livro/:livroId", livroController.atualizar);
 router.delete("/livro/:livroId", livroController.deletar);
 
 // Rotas para USUARIO
 router.get("/usuario", usuarioController.listar);
 router.get("/usuario/:usuarioId", usuarioController.buscar);
 router.post("/usuario", usuarioController.criar);
+router.put("/usuario/:usuarioId", usuarioController.atualizar);
 router.delete("/usuario/:usuarioId", usuarioController.deletar);
 
 // Rotas para AUTOR
 router.get("/autor", autorController.listar);
 router.get("/autor/:autorId", autorController.buscar);
 router.post("/autor", autorController.criar);
+router.put("/autor/:autorId", autorController.atualizar);
 router.delete("/autor/:autorId", autorController.deletar);
 
 // Rotas para EMPRESTIMO
 router.get("/emprestimo", emprestimoController.listar);
 router.get("/emprestimo/:emprestimoId", emprestimoController.buscar);
 router.post("/emprestimo", emprestimoController.criar);
+router.put("/emprestimo/:emprestimoId", emprestimoController.atualizar);
 router.delete("/emprestimo/:emprestimoId", emprestimoController.deletar);
 
 export default app;

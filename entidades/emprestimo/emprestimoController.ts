@@ -140,5 +140,25 @@ async function deletar(request: Request, response: Response) {
   }
 }
 
+// PUT /emprestimo/:emprestimoId - Atualizar um empréstimo
+async function atualizar(request: Request, response: Response) {
+  try {
+    const emprestimoId = obterIdEmprestimo(request);
+    if (!emprestimoId) {
+      return response.send_badRequest("ID do empréstimo não informado.");
+    }
+
+    const corpo = request.body as Partial<Record<string, unknown>>;
+    
+    delete corpo.id;
+    delete corpo._id;
+
+    const emprestimoAtualizado = await servicoEmprestimo.atualizar(emprestimoId, corpo);
+    return response.send_ok("Empréstimo atualizado com sucesso", emprestimoAtualizado);
+  } catch (erro: unknown) {
+    return tratarErroHttp(response, erro);
+  }
+}
+
 // Exportar funções para o servidor
-export { listar, buscar, criar, deletar };
+export { listar, buscar, criar, deletar, atualizar };

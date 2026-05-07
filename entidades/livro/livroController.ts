@@ -129,4 +129,25 @@ async function deletar(req: Request, res: Response) {
   }
 }
 
-export { listar, buscar, criar, deletar };
+// PUT /livro/:livroId - Atualizar um livro
+async function atualizar(req: Request, res: Response) {
+  try {
+    const livroId = obterIdLivro(req);
+    if (!livroId) {
+      return res.send_badRequest("ID do livro não informado.");
+    }
+
+    const corpo = req.body as Partial<Record<string, unknown>>;
+    
+    // Removendo id do corpo se existir para não dar conflito no banco
+    delete corpo.id;
+    delete corpo._id;
+
+    const livroAtualizado = await servicoLivro.atualizar(livroId, corpo);
+    return res.send_ok("Livro atualizado com sucesso", livroAtualizado.paraJSON());
+  } catch (erro: unknown) {
+    return tratarErroHttp(res, erro);
+  }
+}
+
+export { listar, buscar, criar, deletar, atualizar };

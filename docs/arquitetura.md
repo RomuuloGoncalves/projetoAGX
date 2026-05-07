@@ -1,376 +1,239 @@
-# 📚 Arquitetura do Projeto - Explicação em Português
+# Documentação de Arquitetura do Projeto
 
-## Como o Código Funciona
+O projeto adota uma arquitetura em camadas focada em responsabilidades bem definidas, utilizando TypeScript. Este documento descreve as quatro camadas principais do sistema: Modelos, Repositórios, Serviços e Controladores.
 
-O projeto segue um padrão de **4 camadas**. Vou explicar cada uma:
+## 1. Modelo (`models/`)
 
-### **1. MODELO** (`models/`)
+A camada de Modelo é responsável pela representação das entidades de domínio e manipulação de seus estados em memória. Seus objetos devem possuir getters para leitura e setters para alteração de propriedades. Não possuem lógica de acesso a banco de dados.
 
-O modelo é uma **classe que representa os dados**.
-
-**Exemplo: Livro**
+**Exemplo (Livro):**
 
 ```typescript
+import ModeloBase from "../core/CoreModel.ts";
+
+export interface DadosLivro {
+  id?: string;
+  titulo: string;
+  isbn: number;
+  ano: number;
+  quantidadeTotal: number;
+  quantidadeDisponivel: number;
+}
+
 export default class LivroModelo extends ModeloBase {
+  private id?: string;
   private titulo: string;
   private isbn: number;
   private ano: number;
-  
-  // Getters (ler dados)
+  private quantidadeTotal: number;
+  private quantidadeDisponivel: number;
+
+  constructor(dados: DadosLivro) {
+    super();
+    this.id = dados.id;
+    this.titulo = dados.titulo;
+    this.isbn = dados.isbn;
+    this.ano = dados.ano;
+    this.quantidadeTotal = dados.quantidadeTotal;
+    this.quantidadeDisponivel = dados.quantidadeDisponivel;
+  }
+
+  obterID() { return this.id; }
   obterTitulo() { return this.titulo; }
-  
-  // Setters (modificar dados)
-  definirTitulo(novoTitulo: string) { this.titulo = novoTitulo; }
-  
-  // Retorna os dados para salvar no banco
+  obterISBN() { return this.isbn; }
+
+  // Retorna os dados em formato de objeto para salvar no banco
   obterDados() {
-    return { titulo: this.titulo, isbn: this.isbn, ano: this.ano };
+    return {
+      titulo: this.titulo,
+      isbn: this.isbn,
+      ano: this.ano,
+      quantidade_total: this.quantidadeTotal,
+      quantidade_disponivel: this.quantidadeDisponivel,
+    };
+  }
+
+  // Prepara os dados para resposta HTTP
+  paraJSON() {
+    return {
+      id: this.id,
+      titulo: this.titulo,
+      isbn: this.isbn,
+      ano: this.ano,
+      quantidadeTotal: this.quantidadeTotal,
+      quantidadeDisponivel: this.quantidadeDisponivel,
+    };
   }
 }
 ```
 
-**Por que?** Separar os dados da lógica de banco de dados deixa o código mais limpo.
+Cada modelo herda de `ModeloBase`, o que obriga a implementação do método `obterDados()` para mapear o as propriedades internas para os campos do banco de dados.
 
 ---
 
-### **2. REPOSITÓRIO** (`entidades/*/Repository.ts`)
+## 2. Repositório (`entidades/*/Repository.ts`)
 
-O repositório **acessa o banco de dados**.
+O Repositório gerencia o acesso aos dados, isolando a persistência (MongoDB/Mongoose) das regras de negócio. Qualquer operação de banco de dados deve ser executada exclusivamente nesta camada.
 
 **Exemplo:**
 
 ```typescript
-export default class RepositorioLivro extends RepositorioBase {
-  // Buscar todos os livros
-  async obterTodos(): Promise<LivroModelo[]> {
-    const documentos = await this.bd.find();
-    return documentos.map(doc => this.converterParaModelo(doc));
+import mongoose from "mongoose";
+import RepositoryBase from "../../core/CoreRepository.ts";
+import LivroModelo from "../../models/livro.ts";
+
+export default class LivroRepository extends RepositoryBase<LivroModelo> {
+  constructor(bd: mongoose.Model<mongoose.AnyObject>) {
+    super(bd);
   }
-  
-  // Buscar por ID
-  async obterPorId(id: string): Promise<LivroModelo | null> {
-    const documento = await this.bd.findById(id);
+
+  protected converterParaModelo(documento: Record<string, unknown>): LivroModelo {
+    return new LivroModelo({
+      id: String(documento._id ?? ""),
+      titulo: String(documento.titulo ?? ""),
+      isbn: Number(documento.isbn ?? 0),
+      ano: Number(documento.ano ?? 0),
+      quantidadeTotal: Number(documento.quantidade_total ?? 0),
+      quantidadeDisponivel: Number(documento.quantidade_disponivel ?? 0),
+    });
+  }
+
+  async obterPorISBN(isbn: number): Promise<LivroModelo | null> {
+    const documento = await this.bd.findOne({ isbn }).lean();
     if (!documento) return null;
-    return this.converterParaModelo(documento);
-  }
-  
-  // Criar
-  async criar(livro: LivroModelo): Promise<LivroModelo | null> {
-    const doc = await this.bd.create(livro.obterDados());
-    return this.converterParaModelo(doc);
-  }
-  
-  // Deletar
-  async deletarPorId(id: string): Promise<LivroModelo | null> {
-    const doc = await this.bd.findByIdAndDelete(id);
-    if (!doc) return null;
-    return this.converterParaModelo(doc);
+    return this.converterParaModelo(documento as Record<string, unknown>);
   }
 }
 ```
 
-**Por que?** Todo acesso ao banco fica centralizado em um lugar. Se mudar o banco, só muda aqui.
+Por padrão, a classe herdada `RepositoryBase` já provê operações comuns, como `obterTodos()`, `obterPorId(id)`, `criar(modelo)` e `deletarPorId(id)`.
 
 ---
 
-### **3. SERVIÇO** (`entidades/*/Service.ts`)
+## 3. Serviço (`entidades/*/Service.ts`)
 
-O serviço **contém as regras de negócio**.
+A camada de Serviço implementa estritamente as regras de negócio. Ela não lida com requisições HTTP (req/res) e nem manipula diretamente o banco de dados. Executa validações de estado, lançando erros customizados através de módulos de exceção como o `throwlhos`.
 
 **Exemplo:**
 
 ```typescript
-export default class ServicoLivro {
-  private repositorio: RepositorioLivro;
-  
-  constructor(repositorio: RepositorioLivro) {
+import throwlhos from "throwlhos";
+import LivroModelo from "../../models/livro.ts";
+import LivroRepository from "./livroRepository.ts";
+
+export default class LivroService {
+  private repositorio: LivroRepository;
+
+  constructor(repositorio: LivroRepository) {
     this.repositorio = repositorio;
   }
-  
-  // Criar um livro
+
   async criar(livro: LivroModelo): Promise<LivroModelo> {
-    // Regra 1: Verifica se ISBN já existe
     const livroExistente = await this.repositorio.obterPorISBN(livro.obterISBN());
-    if (livroExistente) {
-      throw new Error(`ISBN "${livro.obterISBN()}" já existe!`);
-    }
     
-    // Regra 2: Cria o livro
-    return await this.repositorio.criar(livro);
+    // Regra de negócio: Impede que dois livros tenham o mesmo ISBN
+    if (livroExistente) {
+      throw throwlhos.default.err_conflict(
+        `Já existe um livro com o ISBN "${livro.obterISBN()}".`,
+        { id: livroExistente.obterID() },
+      );
+    }
+
+    const novoLivro = await this.repositorio.criar(livro);
+    if (!novoLivro) {
+      throw throwlhos.default.err_internalServerError("Falha ao criar livro.");
+    }
+    return novoLivro;
   }
-  
-  // Listar todos
-  async listar(): Promise<LivroModelo[]> {
-    return this.repositorio.obterTodos();
-  }
-  
-  // Buscar um
-  async obterPorId(id: string): Promise<LivroModelo> {
-    const livro = await this.repositorio.obterPorId(id);
-    if (!livro) throw new Error("Livro não encontrado");
-    return livro;
-  }
-  
-  // Deletar um
-  async deletar(id: string): Promise<LivroModelo> {
-    const livro = await this.repositorio.deletarPorId(id);
-    if (!livro) throw new Error("Livro não encontrado");
-    return livro;
+
+  async deletar(livroId: string): Promise<LivroModelo> {
+    const livroDeleted = await this.repositorio.deletarPorId(livroId);
+    if (!livroDeleted) {
+      throw throwlhos.default.err_badRequest("Livro não encontrado.");
+    }
+    return livroDeleted;
   }
 }
 ```
 
-**Por que?** A lógica de negócio fica separada da lógica de banco de dados e de HTTP.
-
 ---
 
-### **4. CONTROLLER** (`entidades/*/Controller.ts`)
+## 4. Controlador (`entidades/*/Controller.ts`)
 
-O controller **recebe as requisições HTTP e responde**.
+O Controlador recebe requisições HTTP (através do Express), atua como barreira de validação dos dados de entrada (payload) utilizando ferramentas como `request-check`, delega o processamento ao seu Serviço, e por fim serializa as respostas de erro ou sucesso para o cliente.
 
 **Exemplo:**
 
 ```typescript
-// POST /livro - Criar um novo livro
+import requestCheck from "request-check";
+import * as isness from "@zarco/isness";
+import { Request, Response } from "express";
+import LivroModelo from "../../models/livro.ts";
+import { tratarErroHttp } from "../httpErrorHandler.ts";
+import { servicoLivro } from "./configLivro.ts"; // Exemplo simplificado de injeção
+
+const regras = requestCheck.default();
+
+regras.addRules("titulo", [{
+  validator: (titulo: string) => isness.string(titulo) && titulo.trim().length > 0,
+  message: "O título precisa ser um texto válido",
+}]);
+
 async function criar(req: Request, res: Response) {
   try {
-    const corpo = req.body; // Dados que vêm da requisição
-    
-    // Validar dados
+    const corpo = req.body as Record<string, unknown>;
+
+    // 1. Validar os dados
     const erros = regras.check(
       { titulo: corpo.titulo },
-      { isbn: corpo.isbn }
+      { isbn: corpo.isbn },
+      { ano: corpo.ano },
+      { quantidade_total: corpo.quantidade_total },
+      { quantidade_disponivel: corpo.quantidade_disponivel },
     );
+
     if (erros) {
       return res.send_badRequest("Dados inválidos", erros);
     }
-    
-    // Criar objeto LivroModelo
-    const livro = new LivroModelo({
-      titulo: corpo.titulo,
-      isbn: corpo.isbn
+
+    // 2. Instanciar o modelo de domínio
+    const novoLivro = new LivroModelo({
+      titulo: String(corpo.titulo),
+      isbn: Number(corpo.isbn),
+      ano: Number(corpo.ano),
+      quantidadeTotal: Number(corpo.quantidade_total),
+      quantidadeDisponivel: Number(corpo.quantidade_disponivel),
     });
-    
-    // Chamar serviço para criar
-    const livroSalvo = await servicoLivro.criar(livro);
-    
-    // Responder com sucesso
-    return res.send_created("Livro criado!", livroSalvo.paraJSON());
-  } catch (erro) {
-    return res.send_internalServerError("Erro ao criar livro", erro);
-  }
-}
-```
 
-**Por que?** O controller só valida entrada, chama o serviço e retorna resposta HTTP.
+    // 3. Acionar a camada de serviço
+    const livroSalvo = await servicoLivro.criar(novoLivro);
 
----
-
-## 🔄 Fluxo Completo
-
-Quando alguém faz um `POST /livro` com dados de um livro:
-
-```
-1. Controller recebe a requisição
-   ↓
-2. Controller valida os dados (usando `regras`)
-   ↓
-3. Controller cria um objeto LivroModelo
-   ↓
-4. Controller chama ServicoLivro.criar(livro)
-   ↓
-5. Serviço valida regras de negócio (ex: ISBN duplicado?)
-   ↓
-6. Serviço chama RepositorioLivro.criar(livro)
-   ↓
-7. Repositório converte para dados do banco e salva
-   ↓
-8. Repositório retorna o LivroModelo criado
-   ↓
-9. Serviço retorna para o Controller
-   ↓
-10. Controller retorna resposta HTTP com os dados
-```
-
----
-
-## 📦 Estrutura de Pastas
-
-```
-projeto/
-├── core/                          # Classes base
-│   ├── CoreModel.ts              # Classe ModeloBase
-│   └── CoreRepository.ts          # Classe RepositorioBase
-│
-├── models/                        # Modelos de dados
-│   ├── livro.ts
-│   ├── usuario.ts
-│   ├── autor.ts
-│   └── emprestimo.ts
-│
-├── entidades/                     # Cada entidade tem suas próprias camadas
-│   ├── livro/
-│   │   ├── livroController.ts     # Recebe requisições HTTP
-│   │   ├── livroService.ts        # Regras de negócio
-│   │   └── livroRepository.ts     # Acessa o banco
-│   │
-│   ├── usuario/
-│   │   ├── usuarioController.ts
-│   │   ├── usuarioService.ts
-│   │   └── usuarioRepository.ts
-│   │
-│   ├── autor/
-│   └── emprestimo/
-│
-└── connection/
-    └── mongooseModels.ts         # Schemas do MongoDB
-```
-
----
-
-## 🎯 Método de Nomeclatura
-
-Todos os nomes são em **português** e seguem um padrão:
-
-### Métodos (Verbos)
-
-- `obter*` = buscar algo
-- `definir*` = modificar algo
-- `listar` = listar tudo
-- `criar` = criar novo
-- `deletar` = deletar
-
-### Classes
-
-- `ModeloBase` = classe que todo modelo herda
-- `RepositorioBase` = classe que todo repositório herda
-- `LivroModelo` = classe que representa um Livro
-- `RepositorioLivro` = repositório de Livro
-- `ServicoLivro` = serviço de Livro
-
-### Variáveis
-
-- `livro` = uma instância do Livro
-- `livros` = array de Livros
-- `novoLivro` = novo Livro que vai ser criado
-- `livroDeleted` = Livro que foi deletado
-
----
-
-## 🚀 Exemplo Prático: Criar um Livro
-
-### Código do Controller (recebe requisição HTTP):
-
-```typescript
-async function criar(req: Request, res: Response) {
-  try {
-    const corpo = req.body;
-    
-    // 1. Validar
-    const erros = regras.check({ titulo: corpo.titulo }, { isbn: corpo.isbn });
-    if (erros) return res.send_badRequest("Dados inválidos", erros);
-    
-    // 2. Criar modelo
-    const livro = new LivroModelo({
-      titulo: corpo.titulo,
-      isbn: corpo.isbn
-    });
-    
-    // 3. Chamar serviço
-    const livroSalvo = await servicoLivro.criar(livro);
-    
-    // 4. Responder
-    return res.send_created("Livro criado!", livroSalvo.paraJSON());
-  } catch (erro) {
+    // 4. Retornar resposta ao cliente
+    return res.send_created("Livro criado com sucesso", livroSalvo.paraJSON());
+  } catch (erro: unknown) {
     return tratarErroHttp(res, erro);
   }
 }
 ```
 
-### Código do Serviço (regras de negócio):
-
-```typescript
-async criar(livro: LivroModelo): Promise<LivroModelo> {
-  // Validar se ISBN já existe
-  const livroExistente = await this.repositorio.obterPorISBN(livro.obterISBN());
-  if (livroExistente) {
-    throw new Error("ISBN já existe!");
-  }
-  
-  // Chamar repositório para salvar
-  return await this.repositorio.criar(livro);
-}
-```
-
-### Código do Repositório (acesso ao banco):
-
-```typescript
-async criar(livro: LivroModelo): Promise<LivroModelo | null> {
-  // Salvar no MongoDB
-  const documento = await this.bd.create(livro.obterDados());
-  if (!documento) return null;
-  
-  // Converter para modelo e retornar
-  return this.converterParaModelo(documento);
-}
-```
-
-### Código do Modelo (apenas dados):
-
-```typescript
-export default class LivroModelo extends ModeloBase {
-  private titulo: string;
-  private isbn: number;
-  
-  constructor(dados: DadosLivro) {
-    super();
-    this.titulo = dados.titulo;
-    this.isbn = dados.isbn;
-  }
-  
-  obterISBN() { return this.isbn; }
-  obterTitulo() { return this.titulo; }
-  obterDados() { return { titulo: this.titulo, isbn: this.isbn }; }
-}
-```
-
 ---
 
-## ✅ Benefícios dessa Arquitetura
+## Fluxo da Aplicação
 
-1. **Fácil de entender**: Cada camada tem uma responsabilidade clara
-2. **Fácil de testar**: Pode mockar repositório sem precisar do banco
-3. **Fácil de mudar**: Se mudar de MongoDB para PostgreSQL, só muda o repositório
-4. **Sem duplicação**: Lógica de negócio é escrita uma vez e reutilizada
-5. **Escalável**: Fácil adicionar novas features sem quebrar o existente
+1. **Requisição HTTP**: Chega ao **Controlador**.
+2. **Validação**: O Controlador verifica o payload (tipos, campos requeridos).
+3. **Mapeamento**: O Controlador transfere as propriedades do body para a instância de um **Modelo**.
+4. **Regras de Negócio**: O **Serviço** é chamado, executando validações de domínio (ex: checar duplicidade de documento).
+5. **Persistência**: O Serviço chama o **Repositório**, que serializa o modelo para os formatos do banco e executa a "query".
+6. **Retorno**: O Repositório devolve o resultado atualizado via método do modelo, repassando do Serviço para o Controlador.
+7. **Resposta**: O Controlador converte o resultado em JSON formatado (`paraJSON()`) e retorna o status code apropriado.
 
----
+## Padrões de Nomenclatura Adotados
 
-## 📝 Resumo
+Todas as implementações adotam a semântica de língua portuguesa tanto para variáveis quanto para os métodos e convenções internas:
 
-| Camada | Responsabilidade | Exemplo |
-|--------|-----------------|---------|
-| **Modelo** | Guardar dados | `LivroModelo` com titulo e ISBN |
-| **Repositório** | Acessar banco | `obterTodos()`, `criar()`, `deletar()` |
-| **Serviço** | Regras negócio | Validar se ISBN duplicado |
-| **Controller** | HTTP e validação | Receber POST /livro e responder |
+* **Classes de Domínio**: Uso de sufixos `Modelo`, `Repository`, `Service`. (ex: `LivroModelo`, `LivroRepository`).
+* **Regras de Banco**: Métodos em repositório utilizam verbos de obtenção e modificação: `obterTodos`, `obterPorId`, `criar`, `deletarPorId`.
+* **Getters e Setters**: Os Modelos aplicam fortemente o uso de verbos semânticos para acessar os dados sensíveis: `obterTitulo()`, `definirTitulo()`.
 
----
-
-## 🆘 Dúvidas Comuns
-
-**P: Por que usar `obter*` em vez de `get*`?**
-R: Porque o projeto é em português! Deixa mais consistente.
-
-**P: Para que serve `paraJSON()`?**
-R: Converte o Modelo para um objeto que pode ser enviado como resposta HTTP.
-
-**P: Por que o Repositório não usa `get` e `set`?**
-R: Porque em TypeScript, `private _campo` com getters/setters é mais complicado. `obter*` e `definir*` é mais simples e explícito.
-
-**P: Posso criar um Livro direto sem passar pelo Serviço?**
-R: Tecnicamente sim, mas NÃO FAÇA! O Serviço tem validações importantes. O Controller sempre deve chamar o Serviço.
-
----
-
-Pronto! O código agora está mais simples e em português! 🎉
+O isolamento provê flexibilidade na arquitetura, simplificando a confecção de testes unitários em lógica de negócio e substituindo as soluções de dados com atrito mínimo.

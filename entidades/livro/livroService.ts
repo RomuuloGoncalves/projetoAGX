@@ -42,6 +42,15 @@ export default class LivroService {
     return novoLivro;
   }
 
+  // Atualizar um livro
+  async atualizar(livroId: string, dados: Partial<Record<string, unknown>>): Promise<LivroModelo> {
+    const livroAtualizado = await this.repositorio.atualizarPorId(livroId, dados);
+    if (!livroAtualizado) {
+      throw throwlhos.default.err_badRequest("Livro não encontrado.");
+    }
+    return livroAtualizado;
+  }
+
   // Deletar um livro
   async deletar(livroId: string): Promise<LivroModelo> {
     const livroDeleted = await this.repositorio.deletarPorId(livroId);

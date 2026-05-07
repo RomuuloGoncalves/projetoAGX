@@ -143,5 +143,25 @@ async function deletar(request: Request, response: Response) {
   }
 }
 
+// PUT /usuario/:usuarioId - Atualizar um usuário
+async function atualizar(request: Request, response: Response) {
+  try {
+    const usuarioId = obterIdUsuario(request);
+    if (!usuarioId) {
+      return response.send_badRequest("ID do usuário não informado.");
+    }
+
+    const corpo = request.body as Partial<Record<string, unknown>>;
+    
+    delete corpo.id;
+    delete corpo._id;
+
+    const usuarioAtualizado = await servicoUsuario.atualizar(usuarioId, corpo);
+    return response.send_ok("Usuário atualizado com sucesso", usuarioAtualizado);
+  } catch (erro: unknown) {
+    return tratarErroHttp(response, erro);
+  }
+}
+
 // Exportar funções para o servidor
-export { listar, buscar, criar, deletar };
+export { listar, buscar, criar, deletar, atualizar };

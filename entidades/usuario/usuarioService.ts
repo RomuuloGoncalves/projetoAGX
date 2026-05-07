@@ -56,6 +56,15 @@ export default class UsuarioService {
     return usuarioCriado;
   }
 
+  // Atualizar um usuário
+  async atualizar(usuarioId: string, dados: Partial<Record<string, unknown>>): Promise<UsuarioModelo> {
+    const usuarioAtualizado = await this.repositorio.atualizarPorId(usuarioId, dados);
+    if (!usuarioAtualizado) {
+      throw throwlhos.default.err_badRequest("Usuário não encontrado.");
+    }
+    return usuarioAtualizado;
+  }
+
   // Deletar um usuário
   async deletar(usuarioId: string): Promise<UsuarioModelo> {
     const usuarioDeletado = await this.repositorio.deletarPorId(usuarioId);

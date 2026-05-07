@@ -32,8 +32,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "POST /livro - [NEGATIVO] Deve retornar erro 400 se os dados forem inválidos ou vazios",
+  name: "POST /livro - [NEGATIVO] Deve retornar erro 400 se os dados forem inválidos ou vazios",
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
@@ -62,8 +61,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "GET /livro/:livroId - [POSITIVO] Deve buscar o livro específico pelo ID criado",
+  name: "GET /livro/:livroId - [POSITIVO] Deve buscar o livro específico pelo ID criado",
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
@@ -76,8 +74,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "GET /livro/:livroId - [NEGATIVO] Deve retornar erro 400 para ID inválido",
+  name: "GET /livro/:livroId - [NEGATIVO] Deve retornar erro 400 para ID inválido",
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {

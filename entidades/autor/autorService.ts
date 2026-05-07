@@ -33,6 +33,15 @@ export default class AutorService {
     return autorCriado;
   }
 
+  // Atualizar um autor
+  async atualizar(autorId: string, dados: Partial<Record<string, unknown>>): Promise<AutorModelo> {
+    const autorAtualizado = await this.repositorio.atualizarPorId(autorId, dados);
+    if (!autorAtualizado) {
+      throw throwlhos.default.err_badRequest("Autor não encontrado.");
+    }
+    return autorAtualizado;
+  }
+
   // Deletar um autor
   async deletar(autorId: string): Promise<AutorModelo> {
     const autorDeletado = await this.repositorio.deletarPorId(autorId);

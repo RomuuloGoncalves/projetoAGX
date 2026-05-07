@@ -33,6 +33,15 @@ export default class EmprestimoService {
     return emprestimoCriado;
   }
 
+  // Atualizar um empréstimo
+  async atualizar(emprestimoId: string, dados: Partial<Record<string, unknown>>): Promise<EmprestimoModelo> {
+    const emprestimoAtualizado = await this.repositorio.atualizarPorId(emprestimoId, dados);
+    if (!emprestimoAtualizado) {
+      throw throwlhos.default.err_badRequest("Empréstimo não encontrado.");
+    }
+    return emprestimoAtualizado;
+  }
+
   // Deletar um empréstimo
   async deletar(emprestimoId: string): Promise<EmprestimoModelo> {
     const emprestimoDeletado = await this.repositorio.deletarPorId(emprestimoId);

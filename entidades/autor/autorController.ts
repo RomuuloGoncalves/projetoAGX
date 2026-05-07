@@ -114,5 +114,25 @@ async function deletar(request: Request, response: Response) {
   }
 }
 
+// PUT /autor/:autorId - Atualizar um autor
+async function atualizar(request: Request, response: Response) {
+  try {
+    const autorId = obterIdAutor(request);
+    if (!autorId) {
+      return response.send_badRequest("ID do autor não informado.");
+    }
+
+    const corpo = request.body as Partial<Record<string, unknown>>;
+    
+    delete corpo.id;
+    delete corpo._id;
+
+    const autorAtualizado = await servicoAutor.atualizar(autorId, corpo);
+    return response.send_ok("Autor atualizado com sucesso", autorAtualizado);
+  } catch (erro: unknown) {
+    return tratarErroHttp(response, erro);
+  }
+}
+
 // Exportar funções para o servidor
-export { listar, buscar, criar, deletar };
+export { listar, buscar, criar, deletar, atualizar };
