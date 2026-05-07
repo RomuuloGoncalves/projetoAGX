@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
-import RepositorioBase from "../../core/CoreRepository.ts";
+import RepositoryBase from "../../core/CoreRepository.ts";
 import EmprestimoModelo, { StatusEmprestimo } from "../../models/emprestimo.ts";
 
 // Repositório para acessar empréstimos no banco de dados
-export default class RepositorioEmprestimo
-  extends RepositorioBase {
+export default class EmprestimoRepository
+  extends RepositoryBase<EmprestimoModelo> {
   constructor(mongoDB: mongoose.Model<mongoose.AnyObject>) {
     super(mongoDB);
   }

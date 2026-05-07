@@ -1,16 +1,17 @@
+import throwlhos from "throwlhos";
 import AutorModelo from "../../models/autor.ts";
-import RepositorioAutor from "./autorRepository.ts";
+import AutorRepository from "./autorRepository.ts";
 
 // Serviço para lógica de negócio dos autores
-export default class ServicoAutor {
-  private readonly repositorio: RepositorioAutor;
+export default class AutorService {
+  private readonly repositorio: AutorRepository;
 
-  constructor(repositorio: RepositorioAutor) {
+  constructor(repositorio: AutorRepository) {
     this.repositorio = repositorio;
   }
 
   // Listar todos os autores
-  async listar(): Promise<AutorModelo[]> {
+  listar(): Promise<AutorModelo[]> {
     return this.repositorio.obterTodos();
   }
 
@@ -18,9 +19,7 @@ export default class ServicoAutor {
   async obterPorId(autorId: string): Promise<AutorModelo> {
     const autor = await this.repositorio.obterPorId(autorId);
     if (!autor) {
-      const erro = new Error("Autor não encontrado") as any;
-      erro.code = 400;
-      throw erro;
+      throw throwlhos.default.err_badRequest("Autor não encontrado.");
     }
     return autor;
   }
@@ -29,9 +28,7 @@ export default class ServicoAutor {
   async criar(autor: AutorModelo): Promise<AutorModelo> {
     const autorCriado = await this.repositorio.criar(autor);
     if (!autorCriado) {
-      const erro = new Error("Falha ao criar autor") as any;
-      erro.code = 500;
-      throw erro;
+      throw throwlhos.default.err_internalServerError("Falha ao criar autor.");
     }
     return autorCriado;
   }
@@ -40,9 +37,7 @@ export default class ServicoAutor {
   async deletar(autorId: string): Promise<AutorModelo> {
     const autorDeletado = await this.repositorio.deletarPorId(autorId);
     if (!autorDeletado) {
-      const erro = new Error("Autor não encontrado") as any;
-      erro.code = 400;
-      throw erro;
+      throw throwlhos.default.err_badRequest("Autor não encontrado.");
     }
     return autorDeletado;
   }

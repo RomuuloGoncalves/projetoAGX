@@ -4,28 +4,24 @@ import { Request, Response } from "express";
 import { AutorMongoDB } from "../../connection/mongooseModels.ts";
 import AutorModelo from "../../models/autor.ts";
 import { tratarErroHttp } from "../httpErrorHandler.ts";
-import RepositorioAutor from "./autorRepository.ts";
-import ServicoAutor from "./autorService.ts";
+import AutorRepository from "./autorRepository.ts";
+import AutorService from "./autorService.ts";
 
-// Criar instâncias do repositório e serviço
 const regras = requestCheck.default();
 
-// Regra de validação: o nome deve ser um texto não vazio
 regras.addRules("nome", [{
   validator: (nome: string) => isness.string(nome) && nome.trim().length > 0,
   message: "O nome precisa ser um texto válido",
 }]);
 
-// Regra de validação: a nacionalidade deve ser um texto não vazio
 regras.addRules("nacionalidade", [{
   validator: (nacionalidade: string) =>
     isness.string(nacionalidade) && nacionalidade.trim().length > 0,
   message: "A nacionalidade precisa ser um texto válido",
 }]);
 
-// Criar instâncias (exportadas para uso em server.ts)
-export const repositorioAutor = new RepositorioAutor(AutorMongoDB);
-export const servicoAutor = new ServicoAutor(repositorioAutor);
+export const repositorioAutor = new AutorRepository(AutorMongoDB);
+export const servicoAutor = new AutorService(repositorioAutor);
 
 // Função auxiliar para extrair o ID do autor da requisição
 function obterIdAutor(request: Request): string | null {

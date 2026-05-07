@@ -1,3 +1,5 @@
+import type { Response } from "express";
+
 // Trata erros HTTP de forma padronizada
 export function tratarErroHttp(response: Response, erro: unknown) {
   const erroTipado = erro as {
@@ -15,11 +17,9 @@ export function tratarErroHttp(response: Response, erro: unknown) {
   }
 
   if (statusCode === 409) {
-    const enviarConflito = (response as Response & {
-      send_conflict?: (msg: string, dados?: unknown) => Response;
-    }).send_conflict;
-
-    if (enviarConflito) return enviarConflito(mensagem, erroTipado.data);
+    if (response.send_conflict) {
+      return response.send_conflict(mensagem, erroTipado.data);
+    }
   }
 
   return response.send_internalServerError(mensagem, erroTipado.data ?? erroTipado);

@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import RepositorioBase from "../../core/CoreRepository.ts";
+import RepositoryBase from "../../core/CoreRepository.ts";
 import AutorModelo from "../../models/autor.ts";
 
 // Repositório para acessar autores no banco de dados
-export default class RepositorioAutor extends RepositorioBase {
+export default class AutorRepository extends RepositoryBase<AutorModelo> {
   constructor(mongoDB: mongoose.Model<mongoose.AnyObject>) {
     super(mongoDB);
   }

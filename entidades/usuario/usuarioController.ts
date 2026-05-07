@@ -4,8 +4,8 @@ import { Request, Response } from "express";
 import { UsuarioMongoDB } from "../../connection/mongooseModels.ts";
 import UsuarioModelo from "../../models/usuario.ts";
 import { tratarErroHttp } from "../httpErrorHandler.ts";
-import RepositorioUsuario from "./usuarioRepository.ts";
-import ServicoUsuario from "./usuarioService.ts";
+import UsuarioRepository from "./usuarioRepository.ts";
+import UsuarioService from "./usuarioService.ts";
 
 // Criar regras de validação
 const regras = requestCheck.default();
@@ -16,7 +16,6 @@ regras.addRules("nome", [{
   message: "O nome precisa ser um texto válido",
 }]);
 
-// Regra: o email deve ser válido
 regras.addRules("email", [{
   validator: (email: string) => isness.email(email),
   message: "E-mail inválido",
@@ -24,9 +23,7 @@ regras.addRules("email", [{
 
 // Regra: a senha deve ser alfanumérica e ter mínimo 8 caracteres
 regras.addRules("senha", [{
-  validator: (
-    senha: string,
-  ) => (isness.alphanumeric(senha) || isness.number(senha)),
+  validator: (senha: string) => (isness.alphanumeric(senha) || isness.number(senha)),
   message: "A senha precisa ser alfanumérica",
 }, {
   validator: (senha: string) => senha.length >= 8,
@@ -46,8 +43,8 @@ regras.addRules("data_nascimento", [{
 }]);
 
 // Criar instâncias (exportadas para uso em server.ts)
-export const repositorioUsuario = new RepositorioUsuario(UsuarioMongoDB);
-export const servicoUsuario = new ServicoUsuario(repositorioUsuario);
+export const repositorioUsuario = new UsuarioRepository(UsuarioMongoDB);
+export const servicoUsuario = new UsuarioService(repositorioUsuario);
 
 // Função auxiliar para extrair o ID do usuário da requisição
 function obterIdUsuario(request: Request): string | null {

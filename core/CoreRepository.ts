@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
 import ModeloBase from "./CoreModel.ts";
 
-// Classe base para repositórios (acesso ao banco de dados)
-// Fornece operações CRUD básicas (Criar, Ler, Atualizar, Deletar)
-export default abstract class RepositorioBase {
+// Classe para acesso ao banco de dados -> CRUD
+export default abstract class RepositoryBase<T extends ModeloBase> {
   // O schema do MongoDB para esta entidade
   protected bd: mongoose.Model<mongoose.AnyObject>;
 
@@ -11,14 +10,11 @@ export default abstract class RepositorioBase {
     this.bd = bd;
   }
 
-  // Método abstrato que cada repositório deve implementar
-  // Converte dados do banco em um objeto Model
-  protected abstract converterParaModelo(
-    documento: Record<string, unknown>,
-  ): ModeloBase;
+  // Todo repository precisa conseguir conveter o documento do banco para um objeto instânciado
+  protected abstract converterParaModelo(documento: Record<string, unknown>): T;
 
   // Listar todos os registros
-  async obterTodos(): Promise<ModeloBase[]> {
+  async obterTodos(): Promise<T[]> {
     const documentos = await this.bd.find().lean();
     return documentos.map((doc) =>
       this.converterParaModelo(doc as Record<string, unknown>)
@@ -26,7 +22,7 @@ export default abstract class RepositorioBase {
   }
 
   // Buscar um registro por ID
-  async obterPorId(id: string): Promise<ModeloBase | null> {
+  async obterPorId(id: string): Promise<T | null> {
     // Valida se o ID é válido
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return null;
@@ -41,7 +37,7 @@ export default abstract class RepositorioBase {
   }
 
   // Criar um novo registro
-  async criar(modelo: ModeloBase): Promise<ModeloBase | null> {
+  async criar(modelo: T): Promise<T | null> {
     const documento = await this.bd.create(modelo.obterDados());
     if (!documento) {
       return null;
@@ -53,7 +49,7 @@ export default abstract class RepositorioBase {
   }
 
   // Deletar um registro por ID
-  async deletarPorId(id: string): Promise<ModeloBase | null> {
+  async deletarPorId(id: string): Promise<T | null> {
     // Valida se o ID é válido
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return null;

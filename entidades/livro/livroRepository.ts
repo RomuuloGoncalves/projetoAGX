@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import RepositorioBase from "../../core/CoreRepository.ts";
+import RepositoryBase from "../../core/CoreRepository.ts";
 import LivroModelo from "../../models/livro.ts";
 
 // Repositório de Livros - acessa o banco de dados
-export default class RepositorioLivro extends RepositorioBase {
+export default class LivroRepository extends RepositoryBase<LivroModelo> {
   constructor(bd: mongoose.Model<mongoose.AnyObject>) {
     super(bd);
   }

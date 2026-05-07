@@ -4,8 +4,8 @@ import { Request, Response } from "express";
 import { EmprestimoMongoDB } from "../../connection/mongooseModels.ts";
 import EmprestimoModelo from "../../models/emprestimo.ts";
 import { tratarErroHttp } from "../httpErrorHandler.ts";
-import RepositorioEmprestimo from "./emprestimoRepository.ts";
-import ServicoEmprestimo from "./emprestimoService.ts";
+import EmprestimoRepository from "./emprestimoRepository.ts";
+import EmprestimoService from "./emprestimoService.ts";
 
 // Criar regras de validação
 const regras = requestCheck.default();
@@ -31,10 +31,10 @@ regras.addRules("data_emprestimo", [{
 }]);
 
 // Criar instâncias (exportadas para uso em server.ts)
-export const repositorioEmprestimo = new RepositorioEmprestimo(
+export const repositorioEmprestimo = new EmprestimoRepository(
   EmprestimoMongoDB,
 );
-export const servicoEmprestimo = new ServicoEmprestimo(
+export const servicoEmprestimo = new EmprestimoService(
   repositorioEmprestimo,
 );
 

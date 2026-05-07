@@ -1,18 +1,18 @@
 import throwlhos from "throwlhos";
 import LivroModelo from "../../models/livro.ts";
-import RepositorioLivro from "./livroRepository.ts";
+import LivroRepository from "./livroRepository.ts";
 
 // Serviço de Livros - contém as regras de negócio
-export default class ServicoLivro {
-  private repositorio: RepositorioLivro;
+export default class LivroService {
+  private repositorio: LivroRepository;
 
-  constructor(repositorio: RepositorioLivro) {
+  constructor(repositorio: LivroRepository) {
     this.repositorio = repositorio;
   }
 
   // Listar todos os livros
-  async listar(): Promise<LivroModelo[]> {
-    return this.repositorio.obterTodos() as Promise<LivroModelo[]>;
+  listar(): Promise<LivroModelo[]> {
+    return this.repositorio.obterTodos();
   }
 
   // Buscar um livro pelo ID
@@ -21,7 +21,7 @@ export default class ServicoLivro {
     if (!livro) {
       throw throwlhos.default.err_badRequest("Livro não encontrado.");
     }
-    return livro as LivroModelo;
+    return livro;
   }
 
   // Criar um novo livro
@@ -39,7 +39,7 @@ export default class ServicoLivro {
     if (!novoLivro) {
       throw throwlhos.default.err_internalServerError("Falha ao criar livro.");
     }
-    return novoLivro as LivroModelo;
+    return novoLivro;
   }
 
   // Deletar um livro
@@ -48,6 +48,6 @@ export default class ServicoLivro {
     if (!livroDeleted) {
       throw throwlhos.default.err_badRequest("Livro não encontrado.");
     }
-    return livroDeleted as LivroModelo;
+    return livroDeleted;
   }
 }

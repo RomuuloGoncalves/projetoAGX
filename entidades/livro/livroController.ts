@@ -4,8 +4,8 @@ import { Request, Response } from "express";
 import { LivroMongoDB } from "../../connection/mongooseModels.ts";
 import LivroModelo from "../../models/livro.ts";
 import { tratarErroHttp } from "../httpErrorHandler.ts";
-import RepositorioLivro from "./livroRepository.ts";
-import ServicoLivro from "./livroService.ts";
+import LivroRepository from "./livroRepository.ts";
+import LivroService from "./livroService.ts";
 
 // Configurar as regras de validação
 const regras = requestCheck.default();
@@ -36,8 +36,8 @@ regras.addRules("quantidade_disponivel", [{
 }]);
 
 // Criar instâncias do repositório e serviço
-export const repositorioLivro = new RepositorioLivro(LivroMongoDB);
-export const servicoLivro = new ServicoLivro(repositorioLivro);
+export const repositorioLivro = new LivroRepository(LivroMongoDB);
+export const servicoLivro = new LivroService(repositorioLivro);
 
 // Função auxiliar para obter o ID do livro (da URL ou do corpo da requisição)
 function obterIdLivro(req: Request): string | null {
@@ -55,10 +55,7 @@ function obterIdLivro(req: Request): string | null {
 // ============= ENDPOINTS =============
 
 // GET /livro - Listar todos os livros
-async function listar(
-  _req: Request,
-  res: Response,
-) {
+async function listar(_req: Request, res: Response) {
   try {
     const livros = await servicoLivro.listar();
     return res.send_ok("Livros listados com sucesso", livros);
@@ -68,10 +65,7 @@ async function listar(
 }
 
 // GET /livro/:livroId - Buscar um livro específico
-async function buscar(
-  req: Request,
-  res: Response,
-) {
+async function buscar(req: Request, res: Response) {
   try {
     const livroId = obterIdLivro(req);
     if (!livroId) {
@@ -86,10 +80,7 @@ async function buscar(
 }
 
 // POST /livro - Criar um novo livro
-async function criar(
-  req: Request,
-  res: Response,
-) {
+async function criar(req: Request, res: Response) {
   try {
     const corpo = req.body as Record<string, unknown>;
 
@@ -124,10 +115,7 @@ async function criar(
 }
 
 // DELETE /livro/:livroId - Deletar um livro
-async function deletar(
-  req: Request,
-  res: Response,
-) {
+async function deletar(req: Request, res: Response) {
   try {
     const livroId = obterIdLivro(req);
     if (!livroId) {

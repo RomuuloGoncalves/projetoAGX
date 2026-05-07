@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import RepositorioBase from "../../core/CoreRepository.ts";
+import RepositoryBase from "../../core/CoreRepository.ts";
 import UsuarioModelo from "../../models/usuario.ts";
 
 // Repositório para acessar usuários no banco de dados
-export default class RepositorioUsuario extends RepositorioBase {
+export default class UsuarioRepository extends RepositoryBase<UsuarioModelo> {
   constructor(mongoDB: mongoose.Model<mongoose.AnyObject>) {
     super(mongoDB);
   }

@@ -1,16 +1,17 @@
+import throwlhos from "throwlhos";
 import UsuarioModelo from "../../models/usuario.ts";
-import RepositorioUsuario from "./usuarioRepository.ts";
+import UsuarioRepository from "./usuarioRepository.ts";
 
 // Serviço para lógica de negócio dos usuários
-export default class ServicoUsuario {
-  private readonly repositorio: RepositorioUsuario;
+export default class UsuarioService {
+  private readonly repositorio: UsuarioRepository;
 
-  constructor(repositorio: RepositorioUsuario) {
+  constructor(repositorio: UsuarioRepository) {
     this.repositorio = repositorio;
   }
 
   // Listar todos os usuários
-  async listar(): Promise<UsuarioModelo[]> {
+  listar(): Promise<UsuarioModelo[]> {
     return this.repositorio.obterTodos();
   }
 
@@ -18,9 +19,7 @@ export default class ServicoUsuario {
   async obterPorId(usuarioId: string): Promise<UsuarioModelo> {
     const usuario = await this.repositorio.obterPorId(usuarioId);
     if (!usuario) {
-      const erro = new Error("Usuário não encontrado") as any;
-      erro.code = 400;
-      throw erro;
+      throw throwlhos.default.err_badRequest("Usuário não encontrado.");
     }
     return usuario;
   }
@@ -32,10 +31,10 @@ export default class ServicoUsuario {
       usuario.obterEmail(),
     );
     if (usuarioExistenteEmail) {
-      const erro = new Error(`Já existe um usuário com o email "${usuario.obterEmail()}".`) as any;
-      erro.code = 409;
-      erro.data = { id: usuarioExistenteEmail.obterID() };
-      throw erro;
+      throw throwlhos.default.err_conflict(
+        `Já existe um usuário com o email "${usuario.obterEmail()}".`,
+        { id: usuarioExistenteEmail.obterID() },
+      );
     }
 
     // Verificar se o CPF já existe
@@ -43,18 +42,16 @@ export default class ServicoUsuario {
       usuario.obterCPF(),
     );
     if (usuarioExistenteCPF) {
-      const erro = new Error(`Já existe um usuário com o CPF "${usuario.obterCPF()}".`) as any;
-      erro.code = 409;
-      erro.data = { id: usuarioExistenteCPF.obterID() };
-      throw erro;
+      throw throwlhos.default.err_conflict(
+        `Já existe um usuário com o CPF "${usuario.obterCPF()}".`,
+        { id: usuarioExistenteCPF.obterID() },
+      );
     }
 
     // Criar o usuário
     const usuarioCriado = await this.repositorio.criar(usuario);
     if (!usuarioCriado) {
-      const erro = new Error("Falha ao criar usuário") as any;
-      erro.code = 500;
-      throw erro;
+      throw throwlhos.default.err_internalServerError("Falha ao criar usuário.");
     }
     return usuarioCriado;
   }
@@ -63,9 +60,7 @@ export default class ServicoUsuario {
   async deletar(usuarioId: string): Promise<UsuarioModelo> {
     const usuarioDeletado = await this.repositorio.deletarPorId(usuarioId);
     if (!usuarioDeletado) {
-      const erro = new Error("Usuário não encontrado") as any;
-      erro.code = 400;
-      throw erro;
+      throw throwlhos.default.err_badRequest("Usuário não encontrado.");
     }
     return usuarioDeletado;
   }

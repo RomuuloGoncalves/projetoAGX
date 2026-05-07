@@ -29,11 +29,7 @@ const emprestimoSchema = new conn.mongoose.Schema({
   status: { type: String, enum: ["ativo", "devolvido"], default: "ativo" },
 });
 
-export const AutorMongoDB = conn.mongoose.models.Autor ??
-  conn.mongoose.model("Autor", autorSchema);
-export const LivroMongoDB = conn.mongoose.models.Livro ??
-  conn.mongoose.model("Livro", livroSchema);
-export const UsuarioMongoDB = conn.mongoose.models.Usuario ??
-  conn.mongoose.model("Usuario", usuarioSchema);
-export const EmprestimoMongoDB = conn.mongoose.models.Emprestimo ??
-  conn.mongoose.model("Emprestimo", emprestimoSchema);
+export const AutorMongoDB = conn.mongoose.models.Autor ?? conn.mongoose.model("Autor", autorSchema);
+export const LivroMongoDB = conn.mongoose.models.Livro ?? conn.mongoose.model("Livro", livroSchema);
+export const UsuarioMongoDB = conn.mongoose.models.Usuario ?? conn.mongoose.model("Usuario", usuarioSchema);
+export const EmprestimoMongoDB = conn.mongoose.models.Emprestimo ?? conn.mongoose.model("Emprestimo", emprestimoSchema);
