@@ -1,6 +1,7 @@
 import throwlhos from "throwlhos";
 import UsuarioModelo from "../../models/usuario.ts";
 import UsuarioRepository from "./usuarioRepository.ts";
+import bcryptjs from "bcryptjs";
 
 // Serviço para lógica de negócio dos usuários
 export default class UsuarioService {
@@ -48,6 +49,10 @@ export default class UsuarioService {
       );
     }
 
+    // Fazer o hash da senha antes de salvar
+    const hash = bcryptjs.hashSync(usuario.obterSenha(), 10);
+    usuario.definirSenha(hash);
+
     // Criar o usuário
     const usuarioCriado = await this.repositorio.criar(usuario);
     if (!usuarioCriado) {
@@ -58,6 +63,9 @@ export default class UsuarioService {
 
   // Atualizar um usuário
   async atualizar(usuarioId: string, dados: Partial<Record<string, unknown>>): Promise<UsuarioModelo> {
+    if (dados.senha && typeof dados.senha === 'string') {
+      dados.senha = bcryptjs.hashSync(dados.senha, 10);
+    }
     const usuarioAtualizado = await this.repositorio.atualizarPorId(usuarioId, dados);
     if (!usuarioAtualizado) {
       throw throwlhos.default.err_badRequest("Usuário não encontrado.");

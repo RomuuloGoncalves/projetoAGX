@@ -2,10 +2,15 @@ import * as livroController from "./entidades/livro/livroController.ts";
 import * as usuarioController from "./entidades/usuario/usuarioController.ts";
 import * as autorController from "./entidades/autor/autorController.ts";
 import * as emprestimoController from "./entidades/emprestimo/emprestimoController.ts";
+import * as authController from "./entidades/auth/authController.ts";
+import { authMiddleware } from "./core/authMiddleware.ts";
+import { adminMiddleware } from "./core/adminMiddleware.ts";
 
 import responser from "responser";
 import express from "express";
 import morgan from "morgan";
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "./docs/swagger.json" with { type: "json" };
 
 const app = express();
 const router = express.Router();
@@ -22,6 +27,13 @@ const responserMiddleware = responser.default;
 
 app.use(responserMiddleware);
 app.use(router);
+
+// Documentação Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Rotas de AUTENTICACAO
+router.post("/login", authController.login);
+router.post("/logout", authMiddleware, authController.logout);
 
 // Rotas para LIVRO
 router.get("/livro", livroController.listar);
@@ -44,11 +56,12 @@ router.post("/autor", autorController.criar);
 router.put("/autor/:autorId", autorController.atualizar);
 router.delete("/autor/:autorId", autorController.deletar);
 
-// Rotas para EMPRESTIMO
-router.get("/emprestimo", emprestimoController.listar);
-router.get("/emprestimo/:emprestimoId", emprestimoController.buscar);
-router.post("/emprestimo", emprestimoController.criar);
-router.put("/emprestimo/:emprestimoId", emprestimoController.atualizar);
-router.delete("/emprestimo/:emprestimoId", emprestimoController.deletar);
+// Rotas para EMPRESTIMO (Rotas Privadas)
+router.get("/emprestimo", authMiddleware, emprestimoController.listar);
+router.get("/emprestimo/:emprestimoId", authMiddleware, emprestimoController.buscar);
+router.post("/emprestimo", authMiddleware, adminMiddleware, emprestimoController.criar);
+router.put("/emprestimo/:emprestimoId", authMiddleware, adminMiddleware, emprestimoController.atualizar);
+router.post("/emprestimo/:emprestimoId/devolver", authMiddleware, adminMiddleware, emprestimoController.devolver);
+router.delete("/emprestimo/:emprestimoId", authMiddleware, adminMiddleware, emprestimoController.deletar);
 
 export default app;

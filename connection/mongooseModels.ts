@@ -20,6 +20,7 @@ const usuarioSchema = new conn.mongoose.Schema({
   senha: String,
   cpf: String,
   data_nascimento: Date,
+  role: { type: String, enum: ["admin", "comum"], default: "comum" },
 });
 
 const emprestimoSchema = new conn.mongoose.Schema({

@@ -1,0 +1,475 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API Biblioteca - ProjetoAGX",
+    "description": "API CRUD para gerenciamento de uma biblioteca. Permite gerenciar **usuários, autores, livros e empréstimos**, com autenticação JWT e controle de perfis (admin/comum).\n\n## Fluxo de Autenticação\n1. Crie um usuário em `POST /usuario`\n2. Faça login em `POST /login` e copie o `token` retornado\n3. Clique em **Authorize** (cadeado) e cole o token no formato: `Bearer <TOKEN>`\n4. Rotas de empréstimo marcadas com exigem token. Rotas com exigem ser **admin**.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "ProjetoAGX"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Servidor local de desenvolvimento"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token JWT obtido no endpoint `POST /login`"
+      }
+    },
+    "schemas": {
+      "Erro400": {
+        "type": "object",
+        "properties": {
+          "mensagem": { "type": "string", "example": "Dados inválidos" },
+          "dados": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "campo": { "type": "string" },
+                "mensagem": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "Erro401": {
+        "type": "object",
+        "properties": {
+          "mensagem": { "type": "string", "example": "Token não fornecido" }
+        }
+      },
+      "Erro403": {
+        "type": "object",
+        "properties": {
+          "mensagem": { "type": "string", "example": "Acesso negado. Apenas bibliotecários (admin) podem acessar este recurso." }
+        }
+      },
+      "Erro404": {
+        "type": "object",
+        "properties": {
+          "mensagem": { "type": "string", "example": "Registro não encontrado" }
+        }
+      },
+      "Erro409": {
+        "type": "object",
+        "properties": {
+          "mensagem": { "type": "string", "example": "Registro já existente" }
+        }
+      },
+      "Autor": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "664f1a2b3c4d5e6f7a8b9c0d" },
+          "nome": { "type": "string", "example": "J.K. Rowling" },
+          "nacionalidade": { "type": "string", "example": "Britânica" }
+        }
+      },
+      "AutorInput": {
+        "type": "object",
+        "required": ["nome", "nacionalidade"],
+        "properties": {
+          "nome": { "type": "string", "example": "J.K. Rowling" },
+          "nacionalidade": { "type": "string", "example": "Britânica" }
+        }
+      },
+      "Livro": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "664f1a2b3c4d5e6f7a8b9c0d" },
+          "titulo": { "type": "string", "example": "Harry Potter e a Pedra Filosofal" },
+          "isbn": { "type": "number", "example": 9788532511010 },
+          "ano": { "type": "number", "example": 1997 },
+          "autorId": { "type": "string", "example": "664f1a2b3c4d5e6f7a8b9c0d" },
+          "quantidadeTotal": { "type": "number", "example": 5 },
+          "quantidadeDisponivel": { "type": "number", "example": 3 }
+        }
+      },
+      "LivroInput": {
+        "type": "object",
+        "required": ["titulo", "isbn", "ano", "autor_id", "quantidade_total", "quantidade_disponivel"],
+        "properties": {
+          "titulo": { "type": "string", "example": "Harry Potter e a Pedra Filosofal" },
+          "isbn": { "type": "number", "example": 9788532511010 },
+          "ano": { "type": "number", "example": 1997 },
+          "autor_id": { "type": "string", "example": "664f1a2b3c4d5e6f7a8b9c0d" },
+          "quantidade_total": { "type": "number", "example": 5 },
+          "quantidade_disponivel": { "type": "number", "example": 5 }
+        }
+      },
+      "Usuario": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "664f1a2b3c4d5e6f7a8b9c0d" },
+          "nome": { "type": "string", "example": "João Silva" },
+          "email": { "type": "string", "example": "joao@email.com" },
+          "cpf": { "type": "string", "example": "123.456.789-00" },
+          "dataNascimento": { "type": "string", "format": "date", "example": "1990-01-15" },
+          "role": { "type": "string", "enum": ["admin", "comum"], "example": "comum" }
+        }
+      },
+      "UsuarioInput": {
+        "type": "object",
+        "required": ["nome", "email", "senha", "cpf", "data_nascimento"],
+        "properties": {
+          "nome": { "type": "string", "example": "João Silva" },
+          "email": { "type": "string", "format": "email", "example": "joao@email.com" },
+          "senha": { "type": "string", "minLength": 8, "example": "senhaSegura123" },
+          "cpf": { "type": "string", "example": "123.456.789-00" },
+          "data_nascimento": { "type": "string", "format": "date", "example": "1990-01-15" }
+        }
+      },
+      "Emprestimo": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "664f1a2b3c4d5e6f7a8b9c0d" },
+          "usuarioId": { "type": "string", "example": "664f1a2b3c4d5e6f7a8b9c0d" },
+          "livroId": { "type": "string", "example": "664f1a2b3c4d5e6f7a8b9c0d" },
+          "dataEmprestimo": { "type": "string", "format": "date-time" },
+          "dataDevolucao": { "type": "string", "format": "date-time", "nullable": true },
+          "status": { "type": "string", "enum": ["ativo", "devolvido"], "example": "ativo" }
+        }
+      },
+      "EmprestimoInput": {
+        "type": "object",
+        "required": ["usuario_id", "livro_id", "data_emprestimo"],
+        "properties": {
+          "usuario_id": { "type": "string", "example": "664f1a2b3c4d5e6f7a8b9c0d" },
+          "livro_id": { "type": "string", "example": "664f1a2b3c4d5e6f7a8b9c0d" },
+          "data_emprestimo": { "type": "string", "format": "date", "example": "2026-05-08" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/login": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Fazer login",
+        "description": "Autentica o usuário com e-mail e senha. Retorna um token JWT para uso nas rotas protegidas.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "senha"],
+                "properties": {
+                  "email": { "type": "string", "format": "email", "example": "admin@biblioteca.com" },
+                  "senha": { "type": "string", "example": "senhaSegura123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login bem-sucedido",
+            "content": {
+              "application/json": {
+                "example": {
+                  "mensagem": "Login realizado com sucesso",
+                  "dados": {
+                    "usuario": { "id": "664f...", "nome": "Senhor Bibliotecário", "email": "admin@biblioteca.com", "role": "admin" },
+                    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "E-mail ou senha ausente / formato inválido",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro400" } } }
+          },
+          "401": {
+            "description": "Credenciais incorretas",
+            "content": {
+              "application/json": {
+                "example": { "mensagem": "E-mail ou senha incorretos." }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/autor": {
+      "get": {
+        "tags": ["Autores"],
+        "summary": "Listar todos os autores",
+        "responses": {
+          "200": { "description": "Lista de autores retornada com sucesso", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Autor" } } } } }
+        }
+      },
+      "post": {
+        "tags": ["Autores"],
+        "summary": "Criar um novo autor",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AutorInput" } } }
+        },
+        "responses": {
+          "201": { "description": "Autor criado com sucesso", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Autor" } } } },
+          "400": { "description": "Dados inválidos (nome ou nacionalidade ausentes)", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro400" } } } },
+          "409": { "description": "Autor já existente", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro409" } } } }
+        }
+      }
+    },
+    "/autor/{autorId}": {
+      "get": {
+        "tags": ["Autores"],
+        "summary": "Buscar autor por ID",
+        "parameters": [{ "name": "autorId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Autor encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Autor" } } } },
+          "400": { "description": "ID inválido ou autor não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro400" } } } }
+        }
+      },
+      "put": {
+        "tags": ["Autores"],
+        "summary": "Atualizar um autor",
+        "parameters": [{ "name": "autorId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AutorInput" } } }
+        },
+        "responses": {
+          "200": { "description": "Autor atualizado com sucesso" },
+          "400": { "description": "Autor não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro400" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["Autores"],
+        "summary": "Deletar um autor",
+        "parameters": [{ "name": "autorId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Autor excluído com sucesso" },
+          "400": { "description": "Autor não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro400" } } } }
+        }
+      }
+    },
+    "/livro": {
+      "get": {
+        "tags": ["Livros"],
+        "summary": "Listar todos os livros",
+        "responses": {
+          "200": { "description": "Lista de livros retornada com sucesso", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Livro" } } } } }
+        }
+      },
+      "post": {
+        "tags": ["Livros"],
+        "summary": "Criar um novo livro",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LivroInput" } } }
+        },
+        "responses": {
+          "201": { "description": "Livro criado com sucesso", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Livro" } } } },
+          "400": { "description": "Dados inválidos (campos obrigatórios ausentes ou com tipo errado)", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro400" }, "example": { "mensagem": "Dados inválidos", "dados": [{ "campo": "isbn", "mensagem": "ISBN inválido" }, { "campo": "ano", "mensagem": "Ano inválido" }] } } } },
+          "409": { "description": "Já existe um livro com esse ISBN", "content": { "application/json": { "example": { "mensagem": "Já existe um livro com o ISBN \"9788532511010\".", "dados": { "id": "664f..." } } } } }
+        }
+      }
+    },
+    "/livro/{livroId}": {
+      "get": {
+        "tags": ["Livros"],
+        "summary": "Buscar livro por ID",
+        "parameters": [{ "name": "livroId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Livro encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Livro" } } } },
+          "400": { "description": "ID inválido ou livro não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro400" } } } }
+        }
+      },
+      "put": {
+        "tags": ["Livros"],
+        "summary": "Atualizar um livro",
+        "parameters": [{ "name": "livroId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LivroInput" } } }
+        },
+        "responses": {
+          "200": { "description": "Livro atualizado com sucesso" },
+          "400": { "description": "Livro não encontrado" }
+        }
+      },
+      "delete": {
+        "tags": ["Livros"],
+        "summary": "Deletar um livro",
+        "parameters": [{ "name": "livroId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Livro excluído com sucesso" },
+          "400": { "description": "Livro não encontrado" }
+        }
+      }
+    },
+    "/usuario": {
+      "get": {
+        "tags": ["Usuários"],
+        "summary": "Listar todos os usuários",
+        "responses": {
+          "200": { "description": "Lista de usuários retornada com sucesso", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Usuario" } } } } }
+        }
+      },
+      "post": {
+        "tags": ["Usuários"],
+        "summary": "Criar um novo usuário",
+        "description": "Cria um novo usuário. A senha é automaticamente criptografada (bcrypt). O `role` padrão é `comum`.",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UsuarioInput" } } }
+        },
+        "responses": {
+          "201": { "description": "Usuário criado com sucesso (senha não retornada)", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Usuario" } } } },
+          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro400" }, "example": { "mensagem": "Dados inválidos", "dados": [{ "campo": "email", "mensagem": "E-mail inválido" }, { "campo": "senha", "mensagem": "A senha precisa ter pelo menos 8 caracteres" }] } } } },
+          "409": { "description": "E-mail ou CPF já cadastrado", "content": { "application/json": { "example": { "mensagem": "Já existe um usuário com o email \"joao@email.com\"." } } } }
+        }
+      }
+    },
+    "/usuario/{usuarioId}": {
+      "get": {
+        "tags": ["Usuários"],
+        "summary": "Buscar usuário por ID",
+        "parameters": [{ "name": "usuarioId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Usuário encontrado" },
+          "400": { "description": "Usuário não encontrado" }
+        }
+      },
+      "put": {
+        "tags": ["Usuários"],
+        "summary": "Atualizar um usuário",
+        "description": "Se a senha for enviada, ela será automaticamente recriptografada.",
+        "parameters": [{ "name": "usuarioId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UsuarioInput" } } }
+        },
+        "responses": {
+          "200": { "description": "Usuário atualizado com sucesso" },
+          "400": { "description": "Usuário não encontrado" }
+        }
+      },
+      "delete": {
+        "tags": ["Usuários"],
+        "summary": "Deletar um usuário",
+        "parameters": [{ "name": "usuarioId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Usuário excluído com sucesso" },
+          "400": { "description": "Usuário não encontrado" }
+        }
+      }
+    },
+    "/emprestimo": {
+      "get": {
+        "tags": ["Empréstimos (Protegido)"],
+        "summary": "Listar todos os empréstimos",
+        "description": "Requer autenticação (qualquer usuário logado).",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Lista de empréstimos retornada com sucesso", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Emprestimo" } } } } },
+          "401": { "description": "Token não fornecido ou inválido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro401" } } } }
+        }
+      },
+      "post": {
+        "tags": ["Empréstimos (Protegido)"],
+        "summary": "Criar um novo empréstimo (apenas admin)",
+        "description": "Requer autenticação e perfil **admin** (bibliotecário).\n\nAo criar o empréstimo, o campo `quantidade_disponivel` do livro é **automaticamente decrementado** usando uma transação MongoDB.\n\n**Erros esperados:**\n- Livro não existe → 404\n- Livro sem unidades disponíveis → 400\n- Sem token → 401\n- Usuário comum (não admin) → 403",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EmprestimoInput" } } }
+        },
+        "responses": {
+          "201": { "description": "Empréstimo criado e estoque decrementado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Emprestimo" } } } },
+          "400": { "description": "Dados inválidos ou livro sem unidades disponíveis", "content": { "application/json": { "example": { "mensagem": "Livro não possui unidades disponíveis para empréstimo." } } } },
+          "401": { "description": "Token ausente ou inválido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro401" } } } },
+          "403": { "description": "Usuário não é admin", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro403" } } } },
+          "404": { "description": "Livro não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro404" } } } }
+        }
+      }
+    },
+    "/emprestimo/{emprestimoId}": {
+      "get": {
+        "tags": ["Empréstimos (Protegido)"],
+        "summary": "Buscar empréstimo por ID",
+        "description": "Requer autenticação (qualquer usuário logado).",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "name": "emprestimoId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Empréstimo encontrado" },
+          "400": { "description": "Empréstimo não encontrado" },
+          "401": { "description": "Token ausente", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro401" } } } }
+        }
+      },
+      "put": {
+        "tags": ["Empréstimos (Protegido)"],
+        "summary": "Atualizar um empréstimo (apenas admin)",
+        "description": "Requer autenticação e perfil **admin**.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "name": "emprestimoId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EmprestimoInput" } } }
+        },
+        "responses": {
+          "200": { "description": "Empréstimo atualizado" },
+          "400": { "description": "Empréstimo não encontrado" },
+          "401": { "description": "Token ausente", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro401" } } } },
+          "403": { "description": "Usuário não é admin", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro403" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["Empréstimos (Protegido)"],
+        "summary": "Deletar um empréstimo (apenas admin)",
+        "description": "Requer autenticação e perfil **admin**.\n\n**Não é possível excluir um empréstimo com status `ativo`.** A devolução deve ser feita primeiro via `POST /emprestimo/{id}/devolver`.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "name": "emprestimoId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Empréstimo excluído com sucesso" },
+          "400": {
+            "description": "Empréstimo não encontrado **ou** empréstimo ainda ativo",
+            "content": { "application/json": { "example": { "mensagem": "Não é possível excluir um empréstimo ativo. Realize a devolução primeiro." } } }
+          },
+          "401": { "description": "Token ausente" },
+          "403": { "description": "Usuário não é admin" }
+        }
+      }
+    },
+    "/emprestimo/{emprestimoId}/devolver": {
+      "post": {
+        "tags": ["Empréstimos (Protegido)"],
+        "summary": "Devolver um livro (apenas admin)",
+        "description": "Requer autenticação e perfil **admin**.\n\nRealiza a devolução do empréstimo de forma atômica (Transaction MongoDB):\n- Atualiza o `status` para `devolvido`\n- Preenche `data_devolucao` com a data atual\n- Incrementa `+1` em `quantidade_disponivel` do livro\n\n**Erros esperados:**\n- Empréstimo já devolvido → 409\n- Empréstimo não encontrado → 404",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "name": "emprestimoId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "Devolução realizada com sucesso. O estoque do livro foi incrementado.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Emprestimo" } } }
+          },
+          "401": { "description": "Token ausente", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro401" } } } },
+          "403": { "description": "Usuário não é admin", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro403" } } } },
+          "404": { "description": "Empréstimo não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro404" } } } },
+          "409": {
+            "description": "Empréstimo já devolvido",
+            "content": { "application/json": { "example": { "mensagem": "Este empréstimo já foi devolvido." } } }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Autenticação", "description": "Login e geração de Token JWT" },
+    { "name": "Autores", "description": "CRUD de Autores (acesso livre)" },
+    { "name": "Livros", "description": "CRUD de Livros (acesso livre)" },
+    { "name": "Usuários", "description": "CRUD de Usuários (acesso livre)" },
+    { "name": "Empréstimos (Protegido)", "description": "Gerenciamento de Empréstimos. Listagem requer login. Criação, devolução e exclusão requerem perfil **admin**." }
+  ]
+}

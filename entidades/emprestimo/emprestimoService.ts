@@ -109,10 +109,55 @@ export default class EmprestimoService {
 
   // Deletar um empréstimo
   async deletar(emprestimoId: string): Promise<EmprestimoModelo> {
+    const emprestimoAtual = await this.repositorio.obterPorId(emprestimoId);
+    if (emprestimoAtual && emprestimoAtual.obterDados().status === "ativo") {
+      throw throwlhos.default.err_badRequest("Não é possível excluir um empréstimo ativo. Realize a devolução primeiro.");
+    }
+
     const emprestimoDeletado = await this.repositorio.deletarPorId(emprestimoId);
     if (!emprestimoDeletado) {
       throw throwlhos.default.err_badRequest("Empréstimo não encontrado.");
     }
     return emprestimoDeletado;
+  }
+
+  // Devolver um empréstimo
+  async devolver(emprestimoId: string): Promise<EmprestimoModelo> {
+    const session = await conn.mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      const emprestimoAtual = await this.repositorio.obterPorId(emprestimoId);
+      if (!emprestimoAtual) {
+        throw throwlhos.default.err_notFound("Empréstimo não encontrado.");
+      }
+
+      if (emprestimoAtual.obterDados().status === "devolvido") {
+        throw throwlhos.default.err_conflict("Este empréstimo já foi devolvido.");
+      }
+
+      const livro = await this.livroRepositorio.obterPorId(emprestimoAtual.obterLivroId());
+      if (livro) {
+        const novaQuantidade = livro.obterQuantidadeDisponivel() + 1;
+        await this.livroRepositorio.atualizarPorId(livro.obterID()!, { quantidade_disponivel: novaQuantidade }, { session });
+      }
+
+      const emprestimoAtualizado = await this.repositorio.atualizarPorId(emprestimoId, {
+        status: "devolvido",
+        data_devolucao: new Date()
+      }, { session });
+
+      if (!emprestimoAtualizado) {
+        throw throwlhos.default.err_internalServerError("Falha ao registrar devolução.");
+      }
+
+      await session.commitTransaction();
+      return emprestimoAtualizado;
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      session.endSession();
+    }
   }
 }

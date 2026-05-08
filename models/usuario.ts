@@ -7,6 +7,7 @@ export interface DadosUsuario {
   senha: string;
   cpf: string;
   dataNascimento: Date;
+  role?: string;
 }
 
 // Classe que representa um Usuário
@@ -17,6 +18,7 @@ export default class UsuarioModelo extends ModeloBase {
   private senha: string;
   private cpf: string;
   private dataNascimento: Date;
+  private role: string;
 
   constructor(dados: DadosUsuario) {
     super();
@@ -26,6 +28,7 @@ export default class UsuarioModelo extends ModeloBase {
     this.senha = dados.senha;
     this.cpf = dados.cpf;
     this.dataNascimento = dados.dataNascimento;
+    this.role = dados.role || "comum";
   }
 
   obterID() {
@@ -72,6 +75,14 @@ export default class UsuarioModelo extends ModeloBase {
     this.dataNascimento = novaData;
   }
 
+  obterRole() {
+    return this.role;
+  }
+
+  definirRole(novaRole: string) {
+    this.role = novaRole;
+  }
+
   obterDados() {
     return {
       nome: this.nome,
@@ -79,6 +90,7 @@ export default class UsuarioModelo extends ModeloBase {
       senha: this.senha,
       cpf: this.cpf,
       data_nascimento: this.dataNascimento,
+      role: this.role,
     };
   }
 
@@ -89,6 +101,7 @@ export default class UsuarioModelo extends ModeloBase {
       email: this.email,
       cpf: this.cpf,
       dataNascimento: this.dataNascimento,
+      role: this.role,
     };
   }
 }

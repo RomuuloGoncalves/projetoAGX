@@ -164,5 +164,20 @@ async function atualizar(request: Request, response: Response) {
   }
 }
 
+// POST /emprestimo/:emprestimoId/devolver - Devolver um empréstimo
+async function devolver(request: Request, response: Response) {
+  try {
+    const emprestimoId = obterIdEmprestimo(request);
+    if (!emprestimoId) {
+      return response.send_badRequest("ID do empréstimo não informado.");
+    }
+
+    const emprestimoDevolvido = await servicoEmprestimo.devolver(emprestimoId);
+    return response.send_ok("Devolução realizada com sucesso", emprestimoDevolvido);
+  } catch (erro: unknown) {
+    return tratarErroHttp(response, erro);
+  }
+}
+
 // Exportar funções para o servidor
-export { listar, buscar, criar, deletar, atualizar };
+export { listar, buscar, criar, deletar, atualizar, devolver };

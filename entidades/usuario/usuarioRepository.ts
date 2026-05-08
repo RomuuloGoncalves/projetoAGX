@@ -17,6 +17,7 @@ export default class UsuarioRepository extends RepositoryBase<UsuarioModelo> {
       senha: String(documento.senha ?? ""),
       cpf: String(documento.cpf ?? ""),
       dataNascimento: new Date(String(documento.data_nascimento ?? new Date())),
+      role: String(documento.role ?? "comum"),
     });
   }
 
