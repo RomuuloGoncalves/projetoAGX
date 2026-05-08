@@ -25,11 +25,9 @@ export const servicoAutor = new AutorService(repositorioAutor);
 
 // Função auxiliar para extrair o ID do autor da requisição
 function obterIdAutor(request: Request): string | null {
-  // Tenta pegar do URL (/autor/:autorId)
   const autorIdDoParams = request.params.autorId;
   if (autorIdDoParams) return autorIdDoParams;
 
-  // Tenta pegar do corpo da requisição
   const corpo = request.body as { _id?: unknown; id?: unknown };
   if (corpo?._id && typeof corpo._id === "string") return corpo._id;
   if (corpo?.id && typeof corpo.id === "string") return corpo.id;
@@ -41,7 +39,7 @@ async function listar(_request: Request, response: Response) {
   try {
     // Chamar serviço para listar
     const autores = await servicoAutor.listar();
-    // Responder com sucesso
+
     return response.send_ok("Autores listados com sucesso", autores);
   } catch (erro: unknown) {
     return tratarErroHttp(response, erro);
@@ -59,7 +57,7 @@ async function buscar(request: Request, response: Response) {
 
     // Chamar serviço para buscar
     const autor = await servicoAutor.obterPorId(autorId);
-    // Responder com sucesso
+
     return response.send_ok("Autor encontrado", autor);
   } catch (erro: unknown) {
     return tratarErroHttp(response, erro);
@@ -89,7 +87,7 @@ async function criar(request: Request, response: Response) {
 
     // Chamar serviço para criar
     const autorCriado = await servicoAutor.criar(autor);
-    // Responder com sucesso
+
     return response.send_created("Autor criado com sucesso", autorCriado);
   } catch (erro: unknown) {
     return tratarErroHttp(response, erro);
@@ -107,7 +105,7 @@ async function deletar(request: Request, response: Response) {
 
     // Chamar serviço para deletar
     const autorDeletado = await servicoAutor.deletar(autorId);
-    // Responder com sucesso
+
     return response.send_ok("Autor excluído", { id: autorDeletado.obterID() });
   } catch (erro: unknown) {
     return tratarErroHttp(response, erro);

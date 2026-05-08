@@ -6,14 +6,12 @@ import { repositorioUsuario } from "../usuario/usuarioController.ts";
 
 export default class AuthService {
   async login(email: string, senhaPlana: string) {
-    // Buscar o usuário pelo email
     const usuario = await repositorioUsuario.obterPorEmail(email);
     
     if (!usuario) {
       throw throwlhos.default.err_unauthorized("E-mail ou senha incorretos.");
     }
 
-    // Comparar a senha
     const senhaValida = bcryptjs.compareSync(senhaPlana, usuario.obterSenha());
     
     if (!senhaValida) {

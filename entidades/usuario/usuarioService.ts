@@ -3,7 +3,6 @@ import UsuarioModelo from "../../models/usuario.ts";
 import UsuarioRepository from "./usuarioRepository.ts";
 import bcryptjs from "bcryptjs";
 
-// Serviço para lógica de negócio dos usuários
 export default class UsuarioService {
   private readonly repositorio: UsuarioRepository;
 

@@ -21,7 +21,6 @@ export default class LivroRepository extends RepositoryBase<LivroModelo> {
     });
   }
 
-  // Buscar livro pelo ISBN
   async obterPorISBN(isbn: number): Promise<LivroModelo | null> {
     const documento = await this.bd.findOne({ isbn }).lean();
     if (!documento) return null;

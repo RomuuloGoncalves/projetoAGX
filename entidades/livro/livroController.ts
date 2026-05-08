@@ -7,7 +7,7 @@ import { tratarErroHttp } from "../httpErrorHandler.ts";
 import LivroRepository from "./livroRepository.ts";
 import LivroService from "./livroService.ts";
 
-// Configurar as regras de validação
+// validação
 const regras = requestCheck.default();
 
 regras.addRules("titulo", [{
@@ -44,12 +44,11 @@ regras.addRules("quantidade_disponivel", [{
 export const repositorioLivro = new LivroRepository(LivroMongoDB);
 export const servicoLivro = new LivroService(repositorioLivro);
 
-// Função auxiliar para obter o ID do livro (da URL ou do corpo da requisição)
+// Função auxiliar para obter o ID do livro 
 function obterIdLivro(req: Request): string | null {
-  // Tenta obter da URL primeiro (ex: /livro/123)
+
   if (req.params.livroId) return req.params.livroId;
 
-  // Se não encontrou, tenta obter do corpo da requisição
   const corpo = req.body as { _id?: unknown; id?: unknown };
   if (corpo?._id && typeof corpo._id === "string") return corpo._id;
   if (corpo?.id && typeof corpo.id === "string") return corpo.id;
@@ -113,7 +112,7 @@ async function criar(req: Request, res: Response) {
       quantidadeDisponivel: Number(corpo.quantidade_disponivel),
     });
 
-    // Salvar no banco
+
     const livroSalvo = await servicoLivro.criar(novoLivro);
     return res.send_created("Livro criado com sucesso", livroSalvo.paraJSON());
   } catch (erro: unknown) {

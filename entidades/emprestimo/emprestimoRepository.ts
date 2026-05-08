@@ -12,9 +12,7 @@ export default class EmprestimoRepository
   // Converte um documento do MongoDB para um EmprestimoModelo
   protected converterParaModelo(documento: Record<string, unknown>): EmprestimoModelo {
     const status = String(documento.status ?? "ativo") as StatusEmprestimo;
-    const dataDevolucao = documento.data_devolucao
-      ? new Date(String(documento.data_devolucao))
-      : null;
+    const dataDevolucao = documento.data_devolucao ? new Date(String(documento.data_devolucao)) : null;
 
     return new EmprestimoModelo({
       id: String(documento._id ?? ""),

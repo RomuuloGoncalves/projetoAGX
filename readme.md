@@ -2,204 +2,107 @@
 
 ## Descrição
 
-API CRUD para gerenciamento de uma biblioteca, desenvolvida com **Deno** e **MongoDB**.
-Permite gerenciar **usuários, autores, livros e empréstimos**, com **autenticação JWT**, **transações MongoDB**, **logs padronizados** e **testes automatizados**.
+API robusta para gerenciamento de uma biblioteca, desenvolvida com **Deno**, **Express** (via npm) e **MongoDB (Mongoose)**.
+O sistema conta com um fluxo completo de **autenticação JWT**, controle de permissões por perfil (**RBAC**), gerenciamento de **estoque atômico** via transações, **documentação Swagger** integrada e uma suíte completa de **testes de integração**.
 
 ## Estrutura em Camadas
 
-O projeto segue o fluxo **Controller → Service → Repository → MongoDB**:
+O projeto segue uma arquitetura modular dividida em:
 
-- **Controller**: valida payload e define regras de entrada.
-- **Service**: aplica regra de negócio e orquestra repositórios.
-- **Repository**: centraliza queries e converte para Model.
-- **Model**: classes TypeScript que estendem `CoreModel`.
+- **Entidades**: Contém Controllers, Services e Repositories de cada domínio (Autor, Livro, Usuario, Emprestimo, Auth).
+- **Models**: Definições das classes de domínio que estendem o `CoreModel`.
+- **Core**: Middlewares (Auth, Admin, Blacklist) e utilitários globais.
+- **Connection**: Configurações de banco de dados e Schemas do Mongoose.
+- **Tests**: Testes automatizados utilizando `Deno.test` e `supertest`.
 
 ## Tecnologias Utilizadas
 
-- Deno
-- MongoDB
-- Pacotes obrigatórios:
+- **Deno**: Runtime principal.
+- **Express**: Framework web.
+- **Mongoose**: ODM para modelagem de dados e transações.
+- **Segurança**:
+   - `bcryptjs`: Hash de senhas.
+   - `jsonwebtoken`: Geração e validação de tokens.
+- **Utilitários**:
+   - `responser`: Padronização de respostas HTTP.
+   - `request-check`: Validação de payloads de entrada.
+   - `morgan`: Logging de requisições.
+   - `throwlhos`: Lançamento de erros padronizados com status HTTP.
+   - `swagger-ui-express`: Interface visual para a documentação da API.
 
-   - `responser` — padronização de respostas
-   - `request-check` — validação de payloads
-   - `morgan` — logging de requisições
-   - `isness` — comparação de valores
-   - `throwlhos` — lançamento de erros padronizados
+## Funcionalidades Principais
 
-## Estrutura de Coleções
+### 1. Autenticação e Segurança
+- **Login**: Gera token JWT com expiração de 1 dia.
+- **Logout**: Implementado via **Blacklist em memória**, invalidando o token imediatamente.
+- **RBAC**: Perfil `admin` é necessário para operações sensíveis (criar livros, gerenciar empréstimos, etc). Usuários `comum` possuem acesso limitado.
 
-### Usuários
+### 2. Gestão de Empréstimos
+- **Estoque Atômico**: Ao realizar um empréstimo, a `quantidade_disponivel` do livro é decrementada. Ao devolver, o estoque é recuperado. Ambos usam **Transações (Sessions)** do MongoDB.
+- **Bloqueio de Exclusão**: Não é permitido excluir um empréstimo com status `ativo`. O livro deve ser devolvido primeiro.
+- **Endpoint de Devolução**: Rota específica para processar a devolução e atualizar o status e estoque simultaneamente.
 
-Campos (exemplo):
+## Endpoints
 
-```json
-{
-   "_id": "ObjectId",
-   "nome": "string",
-   "email": "string",
-   "senha": "string (hash)",
-   "role": "string (admin | user)"
-}
-```
+### Autenticação
+- `POST /login`: Autentica usuário e retorna token.
+- `POST /logout`: Invalida o token atual (requer autenticação).
 
-- Função: autenticação e autorização
-- Observações: JWT gerado para cada usuário; `role` define permissões
-
-### Autores
-
-Campos (exemplo):
-
-```json
-{
-   "_id": "ObjectId",
-   "nome": "string",
-   "nacionalidade": "string",
-   // "ano_nascimento": "number"
-}
-```
-
-- Função: armazenar informações dos autores
-
-### Livros
-
-Campos (exemplo):
-
-```json
-{
-   "_id": "ObjectId",
-   "titulo": "string",
-   "isbn": "string",
-   "ano": "number",
-   "autor_id": "ObjectId",
-   "quantidade_total": "number",
-   "quantidade_disponivel": "number"
-}
-```
-
-- Função: gerenciar livros da biblioteca
-- Relacionamentos: `autor_id` referencia Autores
-
-### Empréstimos
-
-Campos (exemplo):
-
-```json
-{
-   "_id": "ObjectId",
-   "usuario_id": "ObjectId",
-   "livro_id": "ObjectId",
-   "data_emprestimo": "Date",
-   "data_devolucao": "Date | null",
-   "status": "string (ativo | devolvido)"
-}
-```
-
-- Função: registrar empréstimos
-- Transação: criar empréstimo → decrementar `quantidade_disponivel` do livro
-
-## Endpoints Sugeridos
+### Documentação
+- `GET /api-docs`: Abre a interface do **Swagger UI** com todos os detalhes da API.
 
 ### Usuários
-
-- `POST /usuario` — criar usuário
-- `GET /usuario` — listar usuários
-- `GET /usuario/:usuarioId` — buscar usuário por id
-- `DELETE /usuario/:usuarioId` — remover usuário
+- `GET /usuario`, `POST /usuario`
+- `GET /usuario/:id`, `PUT /usuario/:id`, `DELETE /usuario/:id`
 
 ### Autores
-
-- `POST /autor` — criar autor
-- `GET /autor` — listar autores
-- `GET /autor/:autorId` — buscar autor por id
-- `DELETE /autor/:autorId` — remover autor
+- `GET /autor`, `POST /autor`
+- `GET /autor/:id`, `PUT /autor/:id`, `DELETE /autor/:id`
 
 ### Livros
+- `GET /livro`, `POST /livro`
+- `GET /livro/:id`, `PUT /livro/:id`, `DELETE /livro/:id`
 
-- `POST /livro` — criar livro
-- `GET /livro` — listar livros
-- `GET /livro/:livroId` — buscar livro por id
-- `DELETE /livro/:livroId` — remover livro
-
-### Empréstimos
-
-- `POST /emprestimo` — criar empréstimo
-- `GET /emprestimo` — listar empréstimos
-- `GET /emprestimo/:emprestimoId` — buscar empréstimo por id
-- `DELETE /emprestimo/:emprestimoId` — remover empréstimo
-
-## Autenticação
-
-- JWT Bearer Token nos headers para endpoints protegidos
-- Tokens configuráveis no Postman
-- Role-based authorization (ex.: apenas admin pode criar livros/autores)
-
-## Transações
-
-- Exemplo: criar empréstimo → decrementar `quantidade_disponivel` no livro
-- Implementado usando MongoDB sessions para garantir atomicidade
+### Empréstimos (Protegidos por Auth)
+- `GET /emprestimo`: Lista todos os empréstimos.
+- `POST /emprestimo`: Cria novo empréstimo (Admin).
+- `POST /emprestimo/:id/devolver`: Registra devolução e recupera estoque (Admin).
+- `DELETE /emprestimo/:id`: Remove registro (apenas se status for `devolvido`).
 
 ## Testes Automatizados
 
-- Utilizando `Deno.test`
-- Cobertura inclui:
+A aplicação possui testes de integração que cobrem fluxos positivos e negativos (erros de validação, permissão e lógica).
 
-   - Respostas positivas (sucesso)
-   - Respostas negativas (validação, autenticação, autorização)
-
-- Seguindo padrões AGX
-
-## Logs e Erros
-
-- `morgan` para logging de todas as requisições
-- `responser` e `throwlhos` para padronizar respostas e erros
-
-## Setup
-
-1. Clonar o repositório:
-
+Para rodar todos os testes:
 ```bash
-git clone <REPO_URL>
-cd biblioteca-deno
+deno test -A tests/
 ```
 
-2. Instalar dependências:
+Arquivos disponíveis:
+- `tests/auth_test.ts`: Login, Logout e Blacklist.
+- `tests/emprestimo_test.ts`: Fluxo completo de empréstimo, estoque e devolução.
+- `tests/livro_test.ts`: CRUD de livros e validações.
+- `tests/autor_test.ts`: CRUD de autores.
+- `tests/usuario_test.ts`: Gestão de usuários e permissões.
 
-```bash
-deno task deps
-```
+## Setup e Execução
 
-3. Configurar variáveis de ambiente (arquivo `.env`):
+1. **Variáveis de Ambiente**: Configure o arquivo `.env` baseado no `.env-example`:
+   ```env
+   PORT=3000
+   MONGO_URI=mongodb://localhost:27017/biblioteca
+   JWT_SECRET=secret
+   ```
 
-- `MONGO_URI=<sua_uri_mongodb>`
-- `JWT_SECRET=<seu_segredo_jwt>`
-- `PORT=8000`
+2. **Rodar em modo Desenvolvimento**:
+   ```bash
+   deno task dev
+   ```
 
-4. Rodar a aplicação:
+3. **Produção**:
+   ```bash
+   deno run -A main.ts
+   ```
 
-```bash
-deno task start
-```
-
-5. Rodar testes:
-
-```bash
-deno task test
-```
-
-## Documentação
-
-- Documentação pública da API: [Postman / Swagger link]
-- Inclui exemplos de requisição e resposta para todos os endpoints
-
-## Considerações Finais
-
-Este projeto demonstra:
-
-- CRUD completo com MongoDB
-- JWT para autenticação e autorização
-- Operações atômicas usando transações
-- Testes automatizados cobrindo todos os endpoints
-- Logging e tratamento padronizado de erros
-- Estrutura modular e organizada, pronta para produção ou evolução
-
----
+<!-- --- -->
+<!-- *Desenvolvido como parte do projeto AGX Biblioteca.* -->

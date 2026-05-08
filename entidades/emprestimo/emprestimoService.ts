@@ -1,5 +1,4 @@
 import throwlhos from "throwlhos";
-import mongoose from "mongoose";
 import EmprestimoModelo from "../../models/emprestimo.ts";
 import EmprestimoRepository from "./emprestimoRepository.ts";
 import LivroRepository from "../livro/livroRepository.ts";

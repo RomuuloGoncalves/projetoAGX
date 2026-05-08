@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import RepositoryBase from "../../core/CoreRepository.ts";
 import UsuarioModelo from "../../models/usuario.ts";
 
-// Repositório para acessar usuários no banco de dados
 export default class UsuarioRepository extends RepositoryBase<UsuarioModelo> {
   constructor(mongoDB: mongoose.Model<mongoose.AnyObject>) {
     super(mongoDB);
@@ -21,14 +20,12 @@ export default class UsuarioRepository extends RepositoryBase<UsuarioModelo> {
     });
   }
 
-  // Buscar usuário por email (busca customizada)
   async obterPorEmail(email: string): Promise<UsuarioModelo | null> {
     const documento = await this.bd.findOne({ email }).lean();
     if (!documento) return null;
     return this.converterParaModelo(documento as Record<string, unknown>);
   }
 
-  // Buscar usuário por CPF (busca customizada)
   async obterPorCPF(cpf: string): Promise<UsuarioModelo | null> {
     const documento = await this.bd.findOne({ cpf }).lean();
     if (!documento) return null;

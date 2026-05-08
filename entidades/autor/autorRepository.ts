@@ -8,7 +8,6 @@ export default class AutorRepository extends RepositoryBase<AutorModelo> {
     super(mongoDB);
   }
 
-  // Converte um documento do MongoDB para um AutorModelo
   protected converterParaModelo(documento: Record<string, unknown>): AutorModelo {
     return new AutorModelo({
       id: String(documento._id ?? ""),

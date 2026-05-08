@@ -32,7 +32,7 @@ if(!mongo_uri_mongoose){
 //   console.error("Erro no Driver Nativo:", err);
 // }
 
-// Conexão via mongoose
+// Conexão com mongoose
 try {
   await mongoose.connect(mongo_uri_mongoose, {
     dbName: db_name, 

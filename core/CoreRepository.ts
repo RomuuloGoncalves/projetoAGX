@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
 import ModeloBase from "./CoreModel.ts";
 
-// Classe para acesso ao banco de dados -> CRUD
+// Classe para CRUD
 export default abstract class RepositoryBase<T extends ModeloBase> {
-  // O schema do MongoDB para esta entidade
   protected bd: mongoose.Model<mongoose.AnyObject>;
 
   constructor(bd: mongoose.Model<mongoose.AnyObject>) {

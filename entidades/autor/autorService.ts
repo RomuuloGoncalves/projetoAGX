@@ -2,7 +2,6 @@ import throwlhos from "throwlhos";
 import AutorModelo from "../../models/autor.ts";
 import AutorRepository from "./autorRepository.ts";
 
-// Serviço para lógica de negócio dos autores
 export default class AutorService {
   private readonly repositorio: AutorRepository;
 

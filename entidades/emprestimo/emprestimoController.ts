@@ -8,24 +8,24 @@ import EmprestimoRepository from "./emprestimoRepository.ts";
 import EmprestimoService from "./emprestimoService.ts";
 import LivroRepository from "../livro/livroRepository.ts";
 
-// Criar regras de validação
+// validação
 const regras = requestCheck.default();
 
-// Regra: o ID do usuário deve ser um texto não vazio
+
 regras.addRules("usuario_id", [{
   validator: (usuarioId: string) =>
     isness.string(usuarioId) && usuarioId.trim().length > 0,
   message: "O id do usuário é obrigatório",
 }]);
 
-// Regra: o ID do livro deve ser um texto não vazio
+
 regras.addRules("livro_id", [{
   validator: (livroId: string) =>
     isness.string(livroId) && livroId.trim().length > 0,
   message: "O id do livro é obrigatório",
 }]);
 
-// Regra: a data de empréstimo deve ser válida
+
 regras.addRules("data_emprestimo", [{
   validator: (dataEmprestimo: string) => isness.date(dataEmprestimo),
   message: "A data de empréstimo precisa ser válida",
@@ -60,7 +60,7 @@ async function listar(_request: Request, response: Response) {
   try {
     // Chamar serviço para listar
     const emprestimos = await servicoEmprestimo.listar();
-    // Responder com sucesso
+
     return response.send_ok("Empréstimos listados com sucesso", emprestimos);
   } catch (erro: unknown) {
     return tratarErroHttp(response, erro);
@@ -78,7 +78,7 @@ async function buscar(request: Request, response: Response) {
 
     // Chamar serviço para buscar
     const emprestimo = await servicoEmprestimo.obterPorId(emprestimoId);
-    // Responder com sucesso
+
     return response.send_ok("Empréstimo encontrado", emprestimo);
   } catch (erro: unknown) {
     return tratarErroHttp(response, erro);
@@ -114,7 +114,7 @@ async function criar(request: Request, response: Response) {
 
     // Chamar serviço para criar
     const emprestimoCriado = await servicoEmprestimo.criar(emprestimo);
-    // Responder com sucesso
+
     return response.send_created(
       "Empréstimo criado com sucesso",
       emprestimoCriado,
@@ -135,7 +135,7 @@ async function deletar(request: Request, response: Response) {
 
     // Chamar serviço para deletar
     const emprestimoDeletado = await servicoEmprestimo.deletar(emprestimoId);
-    // Responder com sucesso
+
     return response.send_ok("Empréstimo excluído", {
       id: emprestimoDeletado.obterID(),
     });

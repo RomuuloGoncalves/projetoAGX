@@ -1,6 +1,6 @@
 import type { Response } from "express";
 
-// Trata erros HTTP de forma padronizada
+// Trata erros HTTP de forma padrão
 export function tratarErroHttp(response: Response, erro: unknown) {
   const erroTipado = erro as {
     code?: number;
