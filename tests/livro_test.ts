@@ -172,18 +172,18 @@ Deno.test({
     assertEquals(response.status, 400);
   },
 });
-// // ===================== TEARDOWN =====================
-// Deno.test({
-//   name: "Teardown - Limpeza de dados de teste (Livro)",
-//   sanitizeOps: false,
-//   sanitizeResources: false,
-//   fn: async () => {
-//     if (livroIdCriado) {
-//       await LivroMongoDB.findByIdAndDelete(livroIdCriado);
-//     }
-//     if (autorIdCriado) {
-//       await AutorMongoDB.findByIdAndDelete(autorIdCriado);
-//     }
-//     await mongoose.disconnect();
-//   },
-// });
+// ===================== Limpar Testes =====================
+Deno.test({
+  name: "Limpar Testes - Limpeza de dados de teste (Livro)",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    if (livroIdCriado) {
+      await LivroMongoDB.findByIdAndDelete(livroIdCriado);
+    }
+    if (autorIdCriado) {
+      await AutorMongoDB.findByIdAndDelete(autorIdCriado);
+    }
+    await mongoose.disconnect();
+  },
+});

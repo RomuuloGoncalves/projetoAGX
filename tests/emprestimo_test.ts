@@ -208,27 +208,27 @@ Deno.test({
     emprestimoIdCriado = ""; // ja foi deletado
   },
 });
-// // ===================== TEARDOWN =====================
-// Deno.test({
-//   name: "Teardown - Limpeza de dados de teste (Emprestimo)",
-//   sanitizeOps: false,
-//   sanitizeResources: false,
-//   fn: async () => {
-//     if (emprestimoIdCriado) {
-//       await EmprestimoMongoDB.findByIdAndDelete(emprestimoIdCriado);
-//     }
-//     if (livroIdCriado) {
-//       await LivroMongoDB.findByIdAndDelete(livroIdCriado);
-//     }
-//     if (autorIdCriado) {
-//       await AutorMongoDB.findByIdAndDelete(autorIdCriado);
-//     }
-//     if (usuarioAdminId) {
-//       await UsuarioMongoDB.findByIdAndDelete(usuarioAdminId);
-//     }
-//     if (usuarioClienteId) {
-//       await UsuarioMongoDB.findByIdAndDelete(usuarioClienteId);
-//     }
-//     await mongoose.disconnect();
-//   },
-// });
+// ===================== Limpar Testes =====================
+Deno.test({
+  name: "Limpar Testes - Limpeza de dados de teste (Emprestimo)",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    if (emprestimoIdCriado) {
+      await EmprestimoMongoDB.findByIdAndDelete(emprestimoIdCriado);
+    }
+    if (livroIdCriado) {
+      await LivroMongoDB.findByIdAndDelete(livroIdCriado);
+    }
+    if (autorIdCriado) {
+      await AutorMongoDB.findByIdAndDelete(autorIdCriado);
+    }
+    if (usuarioAdminId) {
+      await UsuarioMongoDB.findByIdAndDelete(usuarioAdminId);
+    }
+    if (usuarioClienteId) {
+      await UsuarioMongoDB.findByIdAndDelete(usuarioClienteId);
+    }
+    await mongoose.disconnect();
+  },
+});
