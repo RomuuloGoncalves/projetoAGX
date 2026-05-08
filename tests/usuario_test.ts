@@ -150,15 +150,15 @@ Deno.test({
     assertEquals(response.status, 400);
   },
 });
-// ===================== TEARDOWN =====================
-Deno.test({
-  name: "Teardown - Limpeza de dados de teste (Usuario)",
-  sanitizeOps: false,
-  sanitizeResources: false,
-  fn: async () => {
-    if (usuarioIdCriado) {
-      await UsuarioMongoDB.findByIdAndDelete(usuarioIdCriado);
-    }
-    await mongoose.disconnect();
-  },
-});
+// // ===================== TEARDOWN =====================
+// Deno.test({
+//   name: "Teardown - Limpeza de dados de teste (Usuario)",
+//   sanitizeOps: false,
+//   sanitizeResources: false,
+//   fn: async () => {
+//     if (usuarioIdCriado) {
+//       await UsuarioMongoDB.findByIdAndDelete(usuarioIdCriado);
+//     }
+//     await mongoose.disconnect();
+//   },
+// });

@@ -124,15 +124,15 @@ Deno.test({
     assertEquals(response.status, 400);
   },
 });
-// ===================== TEARDOWN =====================
-Deno.test({
-  name: "Teardown - Limpeza de dados de teste (Autor)",
-  sanitizeOps: false,
-  sanitizeResources: false,
-  fn: async () => {
-    if (autorIdCriado) {
-      await AutorMongoDB.findByIdAndDelete(autorIdCriado);
-    }
-    await mongoose.disconnect();
-  },
-});
+// // ===================== TEARDOWN =====================
+// Deno.test({
+//   name: "Teardown - Limpeza de dados de teste (Autor)",
+//   sanitizeOps: false,
+//   sanitizeResources: false,
+//   fn: async () => {
+//     if (autorIdCriado) {
+//       await AutorMongoDB.findByIdAndDelete(autorIdCriado);
+//     }
+//     await mongoose.disconnect();
+//   },
+// });
