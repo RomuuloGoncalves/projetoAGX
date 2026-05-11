@@ -75,7 +75,7 @@ A aplicação possui testes de integração que cobrem fluxos positivos e negati
 
 Para rodar todos os testes:
 ```bash
-deno test -A tests/
+deno test -A 
 ```
 
 Arquivos disponíveis:
@@ -89,20 +89,13 @@ Arquivos disponíveis:
 
 1. **Variáveis de Ambiente**: Configure o arquivo `.env` baseado no `.env-example`:
    ```env
-   PORT=3000
-   MONGO_URI=mongodb://localhost:27017/biblioteca
-   JWT_SECRET=secret
+   MONGO_URI=mongodb+srv://...
+   MONGO_URI_MONGOOSE=mongodb+srv://
+   DB_NAME=#
+   JWT_SECRET=your_jwt_secret_here
    ```
 
-2. **Rodar em modo Desenvolvimento**:
-   ```bash
-   deno task dev
-   ```
-
-3. **Produção**:
+2. **Como rodar**:
    ```bash
    deno run -A main.ts
    ```
-
-<!-- --- -->
-<!-- *Desenvolvido como parte do projeto AGX Biblioteca.* -->

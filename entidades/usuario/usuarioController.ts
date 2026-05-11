@@ -6,6 +6,7 @@ import UsuarioModelo from "../../models/usuario.ts";
 import { tratarErroHttp } from "../httpErrorHandler.ts";
 import UsuarioRepository from "./usuarioRepository.ts";
 import UsuarioService from "./usuarioService.ts";
+import { formatarCPF } from "../../utils/cpfFormatter.ts";
 
 const regras = requestCheck.default();
 
@@ -84,13 +85,15 @@ async function buscar(request: Request, response: Response) {
 async function criar(request: Request, response: Response) {
   try {
     const corpo = request.body as Record<string, unknown>;
-    
+
+    const cpfNormalizado = formatarCPF(corpo.cpf);
+
     // Validar dados enviados
     const erros = regras.check(
       { nome: corpo.nome },
       { email: corpo.email },
       { senha: corpo.senha },
-      { cpf: corpo.cpf },
+      { cpf: cpfNormalizado },
       { data_nascimento: corpo.data_nascimento },
     );
 
@@ -103,7 +106,7 @@ async function criar(request: Request, response: Response) {
       nome: String(corpo.nome),
       email: String(corpo.email),
       senha: String(corpo.senha),
-      cpf: String(corpo.cpf),
+      cpf: cpfNormalizado,
       dataNascimento: new Date(String(corpo.data_nascimento)),
     });
 
@@ -124,7 +127,7 @@ async function deletar(request: Request, response: Response) {
 
     const usuarioDeletado = await servicoUsuario.deletar(usuarioId);
     return response.send_ok("Usuário excluído", { id: usuarioDeletado.obterID() });
- 
+
   } catch (erro: unknown) {
     return tratarErroHttp(response, erro);
   }
@@ -132,15 +135,15 @@ async function deletar(request: Request, response: Response) {
 
 // PUT /usuario/:usuarioId - Atualizar um usuário
 async function atualizar(request: Request, response: Response) {
-  try {  
+  try {
     const usuarioId = obterIdUsuario(request);
-    
+
     if (!usuarioId) {
       return response.send_badRequest("ID do usuário não informado.");
     }
 
     const corpo = request.body as Partial<Record<string, unknown>>;
-    
+
     delete corpo.id;
     delete corpo._id;
 
