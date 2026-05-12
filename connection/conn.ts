@@ -9,41 +9,37 @@ const mongo_uri = env.mongo_uri
 const db_name = env.db_name
 const mongo_uri_mongoose = env.mongo_uri_mongoose
 
-// Preciso validar se as variaveis de acesso estão no corretas
-if(!mongo_uri){
-  throw throwlhos.default.err_internalServerError('MONGO_URI não definida')
+export function validarEnv(uri: string | undefined, name: string | undefined, uri_mongoose: string | undefined) {
+  if (!uri) {
+    throw throwlhos.default.err_internalServerError('MONGO_URI não definida');
+  }
+  if (!name) {
+    throw throwlhos.default.err_internalServerError('DB_NAME não definido');
+  }
+  if (!uri_mongoose) {
+    throw throwlhos.default.err_internalServerError('MONGO_URI_MONGOOSE não definido');
+  }
 }
 
-if(!db_name){
-  throw throwlhos.default.err_internalServerError('DB_NAME não definido')
-}
-
-if(!mongo_uri_mongoose){
-  throw throwlhos.default.err_internalServerError('MONGO_URI_MONGOOSE não definido')
-}
-
-// Conexão drive nativo
-// try {
-//   client = new MongoClient(mongo_uri);
-//   await client.connect();
-//   db = client.db(db_name);
-//   console.log("Conectou com sucesso com o Driver Nativo (mongodb)!");
-// } catch (err) {
-//   console.error("Erro no Driver Nativo:", err);
-// }
+validarEnv(mongo_uri, db_name, mongo_uri_mongoose);
 
 // Conexão com mongoose
-try {
-  await mongoose.connect(mongo_uri_mongoose, {
-    dbName: db_name, 
-    authSource: "admin",
-    serverSelectionTimeoutMS: 5000,
-  });
-  console.log(`Conectado ao MongoDB Cluster via Mongoose: ${db_name}`);
-} catch (err: unknown) {
-  const errorMessage = err instanceof Error ? err.message : String(err);
-  throw throwlhos.default.err_internalServerError(`Erro ao conectar no Mongoose: ${errorMessage}`);
+export async function conectarMongoose(uri_mongoose: string | undefined, name: string | undefined) {
+  try {
+    if (!uri_mongoose || !name) throw new Error("Parâmetros inválidos para conexão");
+    await mongoose.connect(uri_mongoose, {
+      dbName: name,
+      authSource: "admin",
+      serverSelectionTimeoutMS: 5000,
+    });
+    console.log(`Conectado ao MongoDB Cluster via Mongoose: ${name}`);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    throw throwlhos.default.err_internalServerError(`Erro ao conectar no Mongoose: ${errorMessage}`);
+  }
 }
+
+await conectarMongoose(mongo_uri_mongoose, db_name);
 
 export const conn = {
     // client: client,

@@ -40,9 +40,13 @@ regras.addRules("quantidade_disponivel", [{
   message: "A quantidade disponível deve ser um número válido",
 }]);
 
+import AutorRepository from "../autor/autorRepository.ts";
+import { AutorMongoDB } from "../../connection/mongooseModels.ts";
+
 // Criar instâncias do repositório e serviço
 export const repositorioLivro = new LivroRepository(LivroMongoDB);
-export const servicoLivro = new LivroService(repositorioLivro);
+const repositorioAutor = new AutorRepository(AutorMongoDB);
+export const servicoLivro = new LivroService(repositorioLivro, repositorioAutor);
 
 // Função auxiliar para obter o ID do livro 
 function obterIdLivro(req: Request): string | null {

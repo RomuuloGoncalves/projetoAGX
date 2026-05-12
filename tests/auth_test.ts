@@ -2,7 +2,9 @@ import { assertEquals, assertExists } from "@std/assert";
 import supertest from "supertest";
 import mongoose from "mongoose";
 import app from "../server.ts";
+import { Request, Response } from "express";
 import { UsuarioMongoDB } from "../connection/mongooseModels.ts";
+import { authService, logout } from "../entidades/auth/authController.ts";
 const request = supertest(app);
 // Dados do usuario que sera criado para os testes de autenticacao
 const emailTeste = "auth.teste@email.com";
@@ -162,6 +164,69 @@ Deno.test({
       .get("/emprestimo")
       .set("Authorization", `Bearer ${tokenValido}`);
     assertEquals(response.status, 401);
+  },
+});
+// ===================== EXCEPTION E EDGE CASES =====================
+Deno.test({
+  name: "POST /login - [NEGATIVO] Deve capturar erro interno do servidor no login",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    const originalLogin = authService.login;
+    authService.login = () => { throw new Error("Mock Internal Error"); };
+    
+    const response = await request.post("/login").send({
+      email: emailTeste,
+      senha: senhaTeste,
+    });
+    assertEquals(response.status, 500);
+    
+    authService.login = originalLogin;
+  },
+});
+
+Deno.test({
+  name: "AuthService - Deve usar secret default se env.jwt_secret estiver vazio",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    const { env } = await import("../config/env.ts");
+    const origSecret = env.jwt_secret;
+    
+    env.jwt_secret = "";
+    
+    const result = await authService.login(emailTeste, senhaTeste);
+    assertExists(result.token);
+    
+    
+    env.jwt_secret = origSecret;
+  },
+});
+
+Deno.test({
+  name: "Controller logout - [NEGATIVO] Deve cobrir missing authHeader, malformado e exceção",
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    let statusCode = 0;
+    const fakeRes = { 
+        send_badRequest: () => { statusCode = 400; return "badRequest"; }, 
+        send_internalServerError: () => { statusCode = 500; return "error"; } 
+    };
+    
+    // Sem authHeader
+    await logout({ headers: {} } as unknown as Request, fakeRes as unknown as Response);
+    assertEquals(statusCode, 400);
+
+    // Mal formatado
+    statusCode = 0;
+    await logout({ headers: { authorization: "Basic token" } } as unknown as Request, fakeRes as unknown as Response);
+    assertEquals(statusCode, 400);
+    
+    // Forçar throw erro passando request nulo
+    statusCode = 0;
+    await logout(null as unknown as Request, fakeRes as unknown as Response);
+    assertEquals(statusCode, 500);
   },
 });
 // ===================== Limpar Testes =====================

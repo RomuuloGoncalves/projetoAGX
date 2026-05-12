@@ -1,1 +1,7 @@
 .env
+
+node_modules
+node_modules/*
+
+cov_profile
+cov_profile/*

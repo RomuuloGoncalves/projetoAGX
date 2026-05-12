@@ -5,9 +5,11 @@ import LivroRepository from "./livroRepository.ts";
 // Serviço de Livros - contém as regras de negócio
 export default class LivroService {
   private repositorio: LivroRepository;
+  private autorRepositorio?: { obterPorId(id: string): Promise<unknown> };
 
-  constructor(repositorio: LivroRepository) {
+  constructor(repositorio: LivroRepository, autorRepositorio?: { obterPorId(id: string): Promise<unknown> }) {
     this.repositorio = repositorio;
+    this.autorRepositorio = autorRepositorio;
   }
 
   // Listar todos os livros
@@ -35,6 +37,17 @@ export default class LivroService {
         `Já existe um livro com o ISBN "${livro.obterISBN()}".`,
         { id: livroExistente.obterID() },
       );
+    }
+
+    if (this.autorRepositorio) {
+      const autorId = livro.obterAutorId();
+      if (!autorId) {
+        throw throwlhos.default.err_badRequest("O ID do autor é obrigatório.");
+      }
+      const autor = await this.autorRepositorio.obterPorId(autorId);
+      if (!autor) {
+        throw throwlhos.default.err_badRequest("Autor informado não existe.");
+      }
     }
 
     const novoLivro = await this.repositorio.criar(livro);

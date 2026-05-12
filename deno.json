@@ -1,6 +1,10 @@
 {
   "tasks": {
-    "dev": "deno run --watch main.ts"
+    "dev": "deno run --watch main.ts",
+    "test": "deno test -A --no-check",
+    "test:cov": "deno test -A --no-check --coverage=cov_profile",
+    "coverage": "deno coverage cov_profile",
+    "coverage:html": "deno coverage cov_profile --html"
   },
   "imports": {
     "@std/dotenv": "jsr:@std/dotenv@^0.225.6",

@@ -55,12 +55,12 @@ export default class EmprestimoService {
       }
 
       await session.commitTransaction();
+      session.endSession();
       return emprestimoCriado;
     } catch (e) {
       await session.abortTransaction();
-      throw e;
-    } finally {
       session.endSession();
+      throw e;
     }
   }
 
@@ -97,12 +97,12 @@ export default class EmprestimoService {
       }
 
       await session.commitTransaction();
+      session.endSession();
       return emprestimoAtualizado;
     } catch (e) {
       await session.abortTransaction();
-      throw e;
-    } finally {
       session.endSession();
+      throw e;
     }
   }
 
@@ -151,12 +151,12 @@ export default class EmprestimoService {
       }
 
       await session.commitTransaction();
+      session.endSession();
       return emprestimoAtualizado;
     } catch (e) {
       await session.abortTransaction();
-      throw e;
-    } finally {
       session.endSession();
+      throw e;
     }
   }
 }

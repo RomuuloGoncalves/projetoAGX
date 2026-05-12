@@ -69,16 +69,40 @@ O projeto segue uma arquitetura modular dividida em:
 - `POST /emprestimo/:id/devolver`: Registra devolução e recupera estoque (Admin).
 - `DELETE /emprestimo/:id`: Remove registro (apenas se status for `devolvido`).
 
-## Testes Automatizados
+## Testes Automatizados e Cobertura (Coverage)
 
-A aplicação possui testes de integração que cobrem fluxos positivos e negativos (erros de validação, permissão e lógica).
+A aplicação possui testes de integração que cobrem fluxos positivos e negativos (erros de validação, permissão e lógica). O Deno possui um sistema de testes e análise de cobertura (coverage) integrado nativamente, dispensando a instalação de bibliotecas de terceiros (como Jest ou NYC).
 
-Para rodar todos os testes:
-```bash
-deno test -A 
-```
+Toda a configuração de tarefas foi adicionada de forma nativa no arquivo `deno.json`. 
 
-Arquivos disponíveis:
+### Comandos Disponíveis
+
+1. **Rodar apenas os testes:**
+   ```bash
+   deno task test
+   ```
+   Executa todos os arquivos da pasta `/tests` verificando as asserções.
+
+2. **Rodar testes e coletar dados de cobertura:**
+   ```bash
+   deno task test:cov
+   ```
+   Executa os testes e extrai os dados brutos de quais linhas de código foram atingidas, salvando-os na pasta oculta `cov_profile`.
+
+3. **Ver relatório de cobertura no Terminal:**
+   ```bash
+   deno task coverage
+   ```
+   Lê a pasta `cov_profile` e imprime no console o percentual de cobertura para cada arquivo e diretório do projeto.
+
+4. **Gerar e visualizar relatório interativo em HTML:**
+   ```bash
+   deno task coverage:html
+   ```
+   Este comando consolida os dados de cobertura e gera um mini-site estático na pasta `cov_profile/html/`.
+   **Como visualizar:** Após executar o comando, abra o arquivo `cov_profile/html/index.html` em qualquer navegador web. Ele renderizará uma interface gráfica que permite navegar pelos arquivos do projeto e verificar, com realce de sintaxe, exatamente quais linhas foram cobertas pelos testes (linhas verdes) e quais partes do código ainda precisam de testes (linhas vermelhas).
+
+### Arquivos de Testes Disponíveis
 - `tests/auth_test.ts`: Login, Logout e Blacklist.
 - `tests/emprestimo_test.ts`: Fluxo completo de empréstimo, estoque e devolução.
 - `tests/livro_test.ts`: CRUD de livros e validações.
