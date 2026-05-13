@@ -258,7 +258,6 @@ Deno.test({
     
     (autorController.repositorioAutor as unknown as AutorRepositoryInternals).converterParaModelo({ _id: null, nome: null, nacionalidade: null });
 
-    // Hit tratarErroHttp in deletar
     const origDelServ = autorController.servicoAutor.deletar;
     
     autorController.servicoAutor.deletar = (() => { throw new Error("Trigger catch"); }) as unknown as never;

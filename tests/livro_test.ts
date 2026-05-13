@@ -195,6 +195,7 @@ Deno.test({
     const id = resp.body.data.id;
     const response = await request.delete(`/livro/${id}`);
     assertEquals(response.status, 200);
+    await request.delete(`/autor/${aId}`);
   }
 });
 // ===================== EXCEPTION E EDGE CASES =====================

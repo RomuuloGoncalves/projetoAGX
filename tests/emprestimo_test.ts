@@ -478,7 +478,6 @@ Deno.test({
     try { await emprestimoController.servicoEmprestimo.obterPorId("non-existent"); } catch (_e) { /* ok */ }
     emprestimoController.repositorioEmprestimo.obterPorId = origObterEmpService;
 
-    // Hit EmprestimoService.atualizar error path (Line 96)
     const origAtualizarEmpService = emprestimoController.repositorioEmprestimo.atualizarPorId;
     emprestimoController.repositorioEmprestimo.obterPorId = () => Promise.resolve({
       obterDados: () => ({ status: "ativo" }),
