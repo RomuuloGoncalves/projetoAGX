@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import app from "../server.ts";
 import { Request, Response } from "express";
 import { UsuarioMongoDB } from "../connection/mongooseModels.ts";
-import { authService, logout } from "../entidades/auth/authController.ts";
+import { authService, logout } from "../features/auth/authController.ts";
 const request = supertest(app);
 // Dados do usuario que sera criado para os testes de autenticacao
 const emailTeste = "auth.teste@email.com";

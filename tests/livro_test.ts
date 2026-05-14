@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import app from "../server.ts";
 import { Request, Response } from "express";
 import { LivroMongoDB, AutorMongoDB } from "../connection/mongooseModels.ts";
-import * as livroController from "../entidades/livro/livroController.ts";
+import * as livroController from "../features/livro/livroController.ts";
 
 interface LivroServiceInternals {
   autorRepositorio: { obterPorId(id: string): Promise<unknown> };

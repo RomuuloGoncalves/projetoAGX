@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import { Request, Response } from "express";
 import app from "../server.ts";
 import { AutorMongoDB } from "../connection/mongooseModels.ts";
-import * as autorController from "../entidades/autor/autorController.ts";
+import * as autorController from "../features/autor/autorController.ts";
 import AutorModelo from "../models/autor.ts";
 
 interface AutorRepositoryInternals {
@@ -209,7 +209,7 @@ Deno.test({
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
-    const { buscar } = await import("../entidades/autor/autorController.ts");
+    const { buscar } = await import("../features/autor/autorController.ts");
     let status = 0;
     const fakeRes = {
       send_ok: () => { status = 200; },

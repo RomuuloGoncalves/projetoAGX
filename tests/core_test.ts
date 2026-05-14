@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { tratarErroHttp } from "../entidades/httpErrorHandler.ts";
+import { tratarErroHttp } from "../features/httpErrorHandler.ts";
 import RepositoryBase from "../core/CoreRepository.ts";
 import { authMiddleware } from "../core/authMiddleware.ts";
 import ModeloBase from "../core/CoreModel.ts";

@@ -10,7 +10,7 @@ import {
   UsuarioMongoDB,
   EmprestimoMongoDB,
 } from "../connection/mongooseModels.ts";
-import * as emprestimoController from "../entidades/emprestimo/emprestimoController.ts";
+import * as emprestimoController from "../features/emprestimo/emprestimoController.ts";
 const request = supertest(app);
 // IDs criados durante os testes para cleanup
 let autorIdCriado: string;

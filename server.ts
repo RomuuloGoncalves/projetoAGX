@@ -1,8 +1,8 @@
-import * as livroController from "./entidades/livro/livroController.ts";
-import * as usuarioController from "./entidades/usuario/usuarioController.ts";
-import * as autorController from "./entidades/autor/autorController.ts";
-import * as emprestimoController from "./entidades/emprestimo/emprestimoController.ts";
-import * as authController from "./entidades/auth/authController.ts";
+import * as livroController from "./features/livro/livroController.ts";
+import * as usuarioController from "./features/usuario/usuarioController.ts";
+import * as autorController from "./features/autor/autorController.ts";
+import * as emprestimoController from "./features/emprestimo/emprestimoController.ts";
+import * as authController from "./features/auth/authController.ts";
 import { authMiddleware } from "./core/authMiddleware.ts";
 import { adminMiddleware } from "./core/adminMiddleware.ts";
 

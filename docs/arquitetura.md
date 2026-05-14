@@ -71,7 +71,7 @@ Cada modelo herda de `ModeloBase`, o que obriga a implementação do método `ob
 
 ---
 
-## 2. Repositório (`entidades/*/Repository.ts`)
+## 2. Repositório (`features/*/Repository.ts`)
 
 O Repositório gerencia o acesso aos dados, isolando a persistência (MongoDB/Mongoose) das regras de negócio. Qualquer operação de banco de dados deve ser executada exclusivamente nesta camada.
 
@@ -110,7 +110,7 @@ Por padrão, a classe herdada `RepositoryBase` já provê operações comuns, co
 
 ---
 
-## 3. Serviço (`entidades/*/Service.ts`)
+## 3. Serviço (`features/*/Service.ts`)
 
 A camada de Serviço implementa estritamente as regras de negócio. Ela não lida com requisições HTTP (req/res) e nem manipula diretamente o banco de dados. Executa validações de estado, lançando erros customizados através de módulos de exceção como o `throwlhos`.
 
@@ -158,7 +158,7 @@ export default class LivroService {
 
 ---
 
-## 4. Controlador (`entidades/*/Controller.ts`)
+## 4. Controlador (`features/*/Controller.ts`)
 
 O Controlador recebe requisições HTTP (através do Express), atua como barreira de validação dos dados de entrada (payload) utilizando ferramentas como `request-check`, delega o processamento ao seu Serviço, e por fim serializa as respostas de erro ou sucesso para o cliente.
 

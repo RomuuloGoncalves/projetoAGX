@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import app from "../server.ts";
 import { Request, Response } from "express";
 import { UsuarioMongoDB } from "../connection/mongooseModels.ts";
-import * as usuarioController from "../entidades/usuario/usuarioController.ts";
+import * as usuarioController from "../features/usuario/usuarioController.ts";
 
 interface UsuarioRepositoryInternals {
   converterParaModelo(doc: Record<string, unknown>): unknown;
